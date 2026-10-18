@@ -1,0 +1,26 @@
+[
+  { "id": "tab_cardio", "type": "tab", "label": "CardioIA - Fase 3", "disabled": false, "info": "Assina cardioia/paciente01/vitals e exibe BPM, temperatura e alertas." },
+
+  { "id": "broker_hivemq", "type": "mqtt-broker", "name": "HiveMQ público", "broker": "broker.hivemq.com", "port": "1883", "clientid": "", "autoConnect": true, "usetls": false, "protocolVersion": "4", "keepalive": "60", "cleansession": true },
+
+  { "id": "ui_tab_cardio", "type": "ui_tab", "name": "CardioIA", "icon": "favorite", "order": 1, "disabled": false, "hidden": false },
+  { "id": "ui_grp_vitals", "type": "ui_group", "name": "Sinais vitais - Paciente 01", "tab": "ui_tab_cardio", "order": 1, "disp": true, "width": "12", "collapse": false },
+
+  { "id": "mqtt_in", "type": "mqtt in", "z": "tab_cardio", "name": "vitals", "topic": "cardioia/paciente01/vitals", "qos": "1", "datatype": "json", "broker": "broker_hivemq", "nl": false, "rap": true, "rh": 0, "inputs": 0, "x": 110, "y": 160, "wires": [["fn_split", "debug_raw"]] },
+
+  { "id": "debug_raw", "type": "debug", "z": "tab_cardio", "name": "payload bruto", "active": true, "tosidebar": true, "console": false, "complete": "payload", "targetType": "msg", "x": 320, "y": 60, "wires": [] },
+
+  { "id": "fn_split", "type": "function", "z": "tab_cardio", "name": "Separar sinais + regra de alerta", "outputs": 4, "x": 360, "y": 160, "wires": [["chart_bpm"], ["gauge_temp", "chart_temp"], ["text_alert"], ["text_motion"]],
+    "func": "const p = msg.payload;\n// Mesmos limites do ESP32: o Fog revalida a regra (não confia só no dispositivo)\nconst motivos = [];\nif (p.bpm > 120) motivos.push('Taquicardia (' + p.bpm + ' bpm)');\nif (p.bpm > 0 && p.bpm < 50) motivos.push('Bradicardia (' + p.bpm + ' bpm)');\nif (p.temp > 38) motivos.push('Febre (' + p.temp + ' °C)');\nif (p.alert && motivos.length === 0) motivos.push('Ausência de movimento');\n\nconst alerta = motivos.length\n  ? '<span style=\"color:#e53935;font-size:1.4em\">●</span> ALERTA: ' + motivos.join(', ')\n  : '<span style=\"color:#43a047;font-size:1.4em\">●</span> Normal';\n\nreturn [\n  { payload: p.bpm, topic: 'BPM' },\n  { payload: p.temp, topic: 'Temperatura' },\n  { payload: alerta },\n  { payload: (p.motion ? 'Sim' : 'Não') + (p.pending ? ' | sincronizando ' + p.pending + ' amostras' : '') }\n];"
+  },
+
+  { "id": "chart_bpm", "type": "ui_chart", "z": "tab_cardio", "name": "BPM", "group": "ui_grp_vitals", "order": 1, "width": "12", "height": "5", "label": "Frequência cardíaca (bpm)", "chartType": "line", "legend": "false", "xformat": "HH:mm:ss", "interpolate": "linear", "nodata": "aguardando dados", "dot": false, "ymin": "0", "ymax": "200", "removeOlder": "10", "removeOlderPoints": "", "removeOlderUnit": "60", "cutout": 0, "useOneColor": false, "useUTC": false, "colors": ["#e53935"], "outputs": 1, "useDifferentColor": false, "x": 640, "y": 100, "wires": [[]] },
+
+  { "id": "gauge_temp", "type": "ui_gauge", "z": "tab_cardio", "name": "Temperatura", "group": "ui_grp_vitals", "order": 2, "width": "6", "height": "4", "gtype": "gage", "title": "Temperatura", "label": "°C", "format": "{{value | number:1}}", "min": "34", "max": "42", "colors": ["#43a047", "#fdd835", "#e53935"], "seg1": "37.5", "seg2": "38", "x": 650, "y": 160, "wires": [] },
+
+  { "id": "chart_temp", "type": "ui_chart", "z": "tab_cardio", "name": "Temperatura (histórico)", "group": "ui_grp_vitals", "order": 3, "width": "6", "height": "4", "label": "Temperatura (°C)", "chartType": "line", "legend": "false", "xformat": "HH:mm:ss", "interpolate": "linear", "nodata": "aguardando dados", "dot": false, "ymin": "34", "ymax": "42", "removeOlder": "10", "removeOlderPoints": "", "removeOlderUnit": "60", "cutout": 0, "useOneColor": false, "useUTC": false, "colors": ["#1e88e5"], "outputs": 1, "useDifferentColor": false, "x": 680, "y": 200, "wires": [[]] },
+
+  { "id": "text_alert", "type": "ui_text", "z": "tab_cardio", "group": "ui_grp_vitals", "order": 4, "width": "12", "height": "1", "name": "Alerta", "label": "Status", "format": "{{msg.payload}}", "layout": "row-left", "x": 630, "y": 260, "wires": [] },
+
+  { "id": "text_motion", "type": "ui_text", "z": "tab_cardio", "group": "ui_grp_vitals", "order": 5, "width": "12", "height": "1", "name": "Movimento", "label": "Movimento", "format": "{{msg.payload}}", "layout": "row-left", "x": 640, "y": 300, "wires": [] }
+]
