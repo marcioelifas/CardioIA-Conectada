@@ -7,7 +7,7 @@
 
 ```
  ┌──────────────┐   MQTT publish   ┌──────────────────┐   MQTT subscribe   ┌──────────────────┐
- │   ESP32-S3   │ ───────────────▶ │  Broker HiveMQ   │ ─────────────────▶ │     Node-RED     │
+ │    ESP32     │ ───────────────▶ │  Broker HiveMQ   │ ─────────────────▶ │     Node-RED     │
  │   (Edge)     │  QoS 0, JSON     │  (Cloud)         │  QoS 1             │  (Fog)           │
  │ sensores,    │                  │ broker.hivemq.com│                    │ regra de alerta, │
  │ buffer,      │                  │ porta 1883       │                    │ dashboard        │
@@ -18,6 +18,8 @@
 - **Edge (ESP32):** captura, aplica a regra de alerta, guarda no buffer offline e publica.
 - **Cloud (broker MQTT):** desacopla quem produz de quem consome. O ESP32 não sabe quem está ouvindo, e novos consumidores (Grafana, a API em Python do "Ir Além 1", um aplicativo médico) podem assinar o mesmo tópico sem alterar o firmware.
 - **Fog (Node-RED):** camada intermediária que recebe os dados, revalida as regras clínicas e apresenta o dashboard.
+
+**Laboratório local (Docker Compose):** para testar sem instalar nada além do Docker, `fase3/docker-compose.yml` sobe um Mosquitto local com *bridge* para o HiveMQ (assina `cardioia/#`), o Node-RED já com o fluxo e o `node-red-dashboard`, e um painel web extra em React (porta 8080, recebe por MQTT sobre WebSocket na porta 9001). Assim, o que o ESP32 do Wokwi publica no HiveMQ chega ao Node-RED local pela ponte. Na bancada, o ESP32-S3 pode publicar direto no Mosquitto do PC.
 
 ## 2. Por que MQTT
 
@@ -71,9 +73,10 @@ O MQTT é um protocolo publish/subscribe sobre TCP, feito para dispositivos com 
 3. **`function` (Separar sinais + regra de alerta):** tem 4 saídas e distribui cada sinal para o seu widget. Ela **revalida** os limites clínicos (BPM > 120, BPM < 50, temperatura > 38 °C) e monta o texto do alerta com o motivo. Repetir a regra no Fog é intencional: se o firmware de um dispositivo estiver desatualizado ou com defeito, o painel central continua aplicando a regra vigente.
 4. **`ui_chart` (Frequência cardíaca):** gráfico de linha do BPM nos últimos 10 minutos, escala de 0 a 200. É o sinal vital pedido pelo enunciado.
 5. **`ui_gauge` (Temperatura):** medidor de 34 a 42 °C com faixas de cor: verde até 37,5, amarelo até 38 e vermelho acima disso.
-6. **`ui_chart` (Temperatura, histórico):** tendência da temperatura, útil para ver a evolução de uma febre.
-7. **`ui_text` (Status):** indicador visual de alerta (LED virtual). Mostra ● verde "Normal" ou ● vermelho "ALERTA: Taquicardia (135 bpm), Febre (38.6 °C)".
-8. **`ui_text` (Movimento):** mostra "Sim"/"Não" e, durante uma sincronização, quantas amostras ainda estão chegando.
+6. **`ui_template` (LED de alerta):** indicador visual de alerta (LED virtual). Mostra ● verde "Normal" ou ● vermelho "ALERTA: Taquicardia (135 bpm), Febre (38.6 °C)". Foi usado `ui_template` com `ng-style` porque o `ui_text` remove atributos de estilo e a bolinha não mudava de cor.
+7. **`ui_text` (Movimento):** mostra "Sim"/"Não" e, durante uma sincronização, quantas amostras ainda estão chegando.
+
+**Painel extra (React, `fase3/painel`):** além do dashboard do Node-RED (que é a entrega avaliada), há um painel web em `http://localhost:8080` que assina o mesmo tópico via WebSocket: gráfico de BPM com as faixas 50/120 tracejadas, medidor de temperatura, LED de status com o motivo do alerta, movimento, umidade e amostras pendentes de sincronização. Ele mostra outro consumidor do mesmo tópico funcionando sem nenhuma mudança no firmware.
 
 ## 5. Limites de alerta definidos pelo grupo
 

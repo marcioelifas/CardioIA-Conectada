@@ -1,7 +1,7 @@
 # Relatório – Parte 1: Armazenamento e Processamento Local (Edge Computing)
 
 **Projeto:** CardioIA Conectada – Fase 3: Monitoramento Contínuo
-**Plataforma:** ESP32-S3 DevKitC-1 (N16R8), simulado no Wokwi
+**Plataforma:** ESP32 DevKit (simulado no Wokwi) · ESP32-S3 DevKitC-1 N16R8 (montagem em bancada)
 **Código:** [`wokwi/sketch.ino`](../wokwi/sketch.ino)
 
 ## 1. Objetivo
@@ -10,14 +10,16 @@ Simular um dispositivo vestível de monitoramento cardíaco que continue funcion
 
 ## 2. Sensores e componentes
 
-| Componente | GPIO | Função |
-|---|---|---|
-| DHT22 (AM2302) | 4 | Temperatura corporal simulada e umidade do ambiente |
-| Botão "Pulso" | 6 | Cada toque representa um batimento; o BPM é calculado pelos intervalos |
-| PIR HC-SR501 | 5 | Detecta movimento do paciente |
-| Chave deslizante | 7 | Simula a conectividade Wi-Fi (variável booleana `wifiOnline`) |
-| LED vermelho + 220 Ω | 15 | Alerta local |
-| Display ILI9341 2.4" (SPI) | 9–14 | Mostra sinais vitais, status de rede e ocupação do buffer |
+| Componente | GPIO Wokwi (ESP32) | GPIO bancada (ESP32-S3) | Função |
+|---|---|---|---|
+| DHT22 (AM2302) | 15 | 4 | Temperatura corporal simulada e umidade do ambiente |
+| Botão "Pulso" | 26 | 6 | Cada toque representa um batimento; o BPM é calculado pelos intervalos |
+| PIR HC-SR501 | 27 | 5 | Detecta movimento do paciente |
+| Chave deslizante | 25 | 7 | Simula a conectividade Wi-Fi (variável booleana `wifiOnline`) |
+| LED vermelho + 220 Ω | 2 | 15 | Alerta local |
+| Display ILI9341 2.4" (SPI) | CS 5, DC 4, RST 22, MOSI 23, SCK 18, MISO 19 | CS 10, DC 9, RST 14, MOSI 11, SCK 12, MISO 13 | Mostra sinais vitais, status de rede e ocupação do buffer |
+
+O mesmo `sketch.ino` roda nas duas placas: os pinos são escolhidos em tempo de compilação (`#if CONFIG_IDF_TARGET_ESP32S3`). No Wokwi foi usado o ESP32 clássico porque, nos testes, o DHT22 não respondeu na simulação do ESP32-S3 (todas as leituras inválidas, com fiação e bibliotecas verificadas).
 
 O DHT22 conta como um sensor (temperatura + umidade). O segundo sensor obrigatório é o botão de pulso, e o PIR é um terceiro sensor, que permite detectar a "ausência de movimento".
 
@@ -34,8 +36,9 @@ O DHT22 conta como um sensor (temperatura + umidade). O segundo sensor obrigató
         3. aplica as regras de alerta
         4. acende/apaga o LED de alerta   ← funciona offline
         5. grava a amostra no buffer local
-        6. se online → sincroniza o buffer (do mais antigo ao mais novo)
-        7. atualiza o display
+        6. atualiza o display
+   (a cada volta do loop, se online e com MQTT conectado → sincroniza o buffer,
+    do mais antigo ao mais novo; assim a rajada sai assim que a conexão volta)
 ```
 
 **Regras de alerta (processadas no próprio ESP32):**

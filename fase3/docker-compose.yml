@@ -1,0 +1,63 @@
+# CardioIA - Lab local da Fase 3
+#   docker compose up -d                    -> broker MQTT + Node-RED
+#   docker compose --profile sim up -d      -> + simulador de sinais vitais (sem ESP32)
+# Dashboard Node-RED: http://localhost:1880/ui | Editor: http://localhost:1880 | Painel web: http://localhost:8080
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.20
+    ports:
+      - "1883:1883"   # exposto na rede local para o ESP32 da bancada
+      - "9001:9001"   # MQTT via WebSocket para o painel web
+    volumes:
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+
+  node-red:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM nodered/node-red:4.0.9
+        RUN npm install --no-audit --no-fund node-red-dashboard@3.6.5
+    ports:
+      - "1880:1880"
+    environment:
+      FLOWS: flow.json
+      MQTT_HOST: mosquitto   # troque por broker.hivemq.com para usar com o Wokwi
+    volumes:
+      - ./node-red:/data     # o flow fica versionado no repositório
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
+
+  # Painel web (React + componente Gauge do 21st.dev), lê o MQTT via WebSocket :9001
+  painel:
+    build: ./painel
+    ports:
+      - "8080:80"
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
+
+  # Publica sinais vitais falsos a cada 2 s, no mesmo formato do ESP32.
+  # ~1 em cada 3 amostras sai fora da faixa para testar o alerta.
+  simulador:
+    image: eclipse-mosquitto:2.0.20
+    profiles: ["sim"]
+    depends_on:
+      - mosquitto
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        t0=0
+        while true; do
+          t0=$$((t0 + 2))
+          bpm=$$((60 + RANDOM % 75))
+          temp=$$((362 + RANDOM % 22))
+          mov=$$((RANDOM % 2))
+          alert=$$(( bpm > 120 || temp > 380 ))
+          msg="{\"t\":$$t0,\"temp\":$$((temp / 10)).$$((temp % 10)),\"hum\":55,\"bpm\":$$bpm,\"motion\":$$mov,\"alert\":$$alert,\"pending\":0}"
+          mosquitto_pub -h mosquitto -t cardioia/paciente01/vitals -m "$$msg"
+          echo "$$msg"
+          sleep 2
+        done

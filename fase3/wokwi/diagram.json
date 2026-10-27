@@ -3,47 +3,47 @@
   "author": "CardioIA Conectada",
   "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-s3-devkitc-1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
-    { "type": "wokwi-dht22", "id": "dht", "top": -120, "left": -150, "attrs": { "temperature": "36.8", "humidity": "55" } },
-    { "type": "wokwi-pir-motion-sensor", "id": "pir", "top": -130, "left": 40, "attrs": {} },
-    { "type": "wokwi-pushbutton", "id": "beat", "top": 220, "left": -200, "attrs": { "color": "red", "label": "Pulso" } },
-    { "type": "wokwi-slide-switch", "id": "wifi", "top": 140, "left": -200, "attrs": { "value": "1" } },
-    { "type": "wokwi-led", "id": "led", "top": 60, "left": -150, "attrs": { "color": "red" } },
-    { "type": "wokwi-resistor", "id": "r1", "top": 120, "left": -110, "rotate": 90, "attrs": { "value": "220" } },
-    { "type": "wokwi-ili9341", "id": "tft", "top": -160, "left": 260, "attrs": {} }
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht", "top": -105.3, "left": -168.6, "attrs": { "temperature": "36.8", "humidity": "55" } },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir", "top": -101.6, "left": -24.18, "attrs": {} },
+    { "type": "wokwi-slide-switch", "id": "wifi", "top": 120, "left": -220, "attrs": { "value": "1" } },
+    { "type": "wokwi-pushbutton", "id": "beat", "top": 200, "left": -230, "attrs": { "color": "red", "label": "Pulso" } },
+    { "type": "wokwi-led", "id": "led", "top": 260, "left": -100, "attrs": { "color": "red", "label": "Alerta" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 300, "left": -40, "attrs": { "value": "220" } },
+    { "type": "wokwi-ili9341", "id": "tft", "top": -140, "left": 220, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
     [ "esp:RX", "$serialMonitor:TX", "", [] ],
 
-    [ "dht:VCC", "esp:3V3.1", "red", [] ],
+    [ "dht:VCC", "esp:3V3", "red", [] ],
     [ "dht:GND", "esp:GND.1", "black", [] ],
-    [ "dht:SDA", "esp:4", "green", [] ],
+    [ "dht:SDA", "esp:15", "green", [] ],
 
     [ "pir:VCC", "esp:5V", "red", [] ],
     [ "pir:GND", "esp:GND.1", "black", [] ],
-    [ "pir:OUT", "esp:5", "orange", [] ],
+    [ "pir:OUT", "esp:27", "orange", [] ],
 
-    [ "beat:1.l", "esp:6", "blue", [] ],
+    [ "beat:1.l", "esp:26", "blue", [] ],
     [ "beat:2.l", "esp:GND.1", "black", [] ],
 
-    [ "wifi:2", "esp:7", "purple", [] ],
+    [ "wifi:2", "esp:25", "purple", [] ],
     [ "wifi:1", "esp:GND.1", "black", [] ],
-    [ "wifi:3", "esp:3V3.1", "red", [] ],
+    [ "wifi:3", "esp:3V3", "red", [] ],
 
-    [ "esp:15", "r1:1", "red", [] ],
-    [ "r1:2", "led:A", "red", [] ],
-    [ "led:C", "esp:GND.1", "black", [] ],
+    [ "esp:2", "r1:2", "red", [] ],
+    [ "r1:1", "led:A", "red", [] ],
+    [ "led:C", "esp:GND.2", "black", [] ],
 
-    [ "tft:VCC", "esp:3V3.1", "red", [] ],
-    [ "tft:GND", "esp:GND.1", "black", [] ],
-    [ "tft:LED", "esp:3V3.1", "red", [] ],
-    [ "tft:CS", "esp:10", "yellow", [] ],
-    [ "tft:D/C", "esp:9", "yellow", [] ],
-    [ "tft:RST", "esp:14", "yellow", [] ],
-    [ "tft:MOSI", "esp:11", "yellow", [] ],
-    [ "tft:SCK", "esp:12", "yellow", [] ],
-    [ "tft:MISO", "esp:13", "yellow", [] ]
+    [ "tft:VCC", "esp:3V3", "red", [] ],
+    [ "tft:GND", "esp:GND.2", "black", [] ],
+    [ "tft:LED", "esp:3V3", "red", [] ],
+    [ "tft:CS", "esp:5", "yellow", [] ],
+    [ "tft:D/C", "esp:4", "yellow", [] ],
+    [ "tft:RST", "esp:22", "yellow", [] ],
+    [ "tft:MOSI", "esp:23", "yellow", [] ],
+    [ "tft:SCK", "esp:18", "yellow", [] ],
+    [ "tft:MISO", "esp:19", "yellow", [] ]
   ],
   "dependencies": {}
 }

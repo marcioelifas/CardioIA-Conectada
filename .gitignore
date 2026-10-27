@@ -30,3 +30,7 @@ out/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Node-RED (arquivos gerados em runtime no volume fase3/node-red)
+fase3/node-red/*
+!fase3/node-red/flow.json

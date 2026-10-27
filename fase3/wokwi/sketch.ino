@@ -1,6 +1,6 @@
 /*
  * CardioIA Conectada - Fase 3: Monitoramento Contínuo (IoT na Saúde)
- * Placa: ESP32-S3 DevKitC-1 (N16R8)
+ * Placas: ESP32-S3 DevKitC-1 N16R8 (bancada) | ESP32 DevKit V1 (Wokwi)
  *
  * Fluxo: captura -> buffer local (Edge) -> MQTT (nuvem) -> Node-RED (dashboard/alerta)
  *
@@ -16,12 +16,15 @@
 
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <DHTesp.h>
+#include <DHT.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
 // ---------------- Pinos ----------------
+// O mesmo sketch roda nas duas placas: ESP32-S3 (bancada) e ESP32 clássico (Wokwi,
+// onde o DHT22 não responde na simulação do S3). No clássico, GPIO 6-11 são da flash.
+#if CONFIG_IDF_TARGET_ESP32S3
 #define PIN_DHT     4
 #define PIN_PIR     5
 #define PIN_BEAT    6    // botão de pulso (INPUT_PULLUP, ativo em LOW)
@@ -33,6 +36,19 @@
 #define TFT_CS      10
 #define TFT_DC      9
 #define TFT_RST     14
+#else
+#define PIN_DHT     15
+#define PIN_PIR     27
+#define PIN_BEAT    26
+#define PIN_WIFI_SW 25
+#define PIN_LED     2
+#define TFT_SCK     18
+#define TFT_MOSI    23
+#define TFT_MISO    19
+#define TFT_CS      5
+#define TFT_DC      4
+#define TFT_RST     22
+#endif
 
 // ---------------- Rede / MQTT ----------------
 const char* WIFI_SSID = "Wokwi-GUEST";
@@ -71,7 +87,7 @@ int count = 0;     // amostras guardadas
 unsigned long dropped = 0;
 
 // ---------------- Estado ----------------
-DHTesp dht;
+DHT dht(PIN_DHT, DHT22);
 WiFiClient net;
 PubSubClient mqtt(net);
 Adafruit_ILI9341 tft(TFT_CS, TFT_DC, TFT_RST);
@@ -114,12 +130,10 @@ void pushSample(const Sample& s) {
   else { head = (head + 1) % BUFFER_CAP; dropped++; }  // sobrescreve a mais antiga
 }
 
-String toJson(const Sample& s) {
-  char out[160];
-  snprintf(out, sizeof(out),
+void toJson(const Sample& s, char* out, size_t len) {
+  snprintf(out, len,
     "{\"t\":%lu,\"temp\":%.1f,\"hum\":%u,\"bpm\":%u,\"motion\":%d,\"alert\":%d,\"pending\":%d}",
     (unsigned long)s.t, s.temp / 10.0, s.hum, s.bpm, s.motion, s.alert, count - 1);
-  return String(out);
 }
 
 // Envia do mais antigo ao mais novo. Só remove do buffer se o publish deu certo:
@@ -128,9 +142,10 @@ String toJson(const Sample& s) {
 // para entrega confirmada, migrar para esp-mqtt com QoS 1.
 void syncBuffer() {
   while (count > 0) {
-    String json = toJson(buf[head]);
-    if (!mqtt.publish(MQTT_TOPIC, json.c_str())) break;
-    Serial.println("[CLOUD] " + json);
+    char json[160];
+    toJson(buf[head], json, sizeof(json));
+    if (!mqtt.publish(MQTT_TOPIC, json)) break;
+    Serial.printf("[CLOUD] %s\n", json);
     head = (head + 1) % BUFFER_CAP;
     count--;
   }
@@ -138,7 +153,10 @@ void syncBuffer() {
 
 // ---------------- Conectividade ----------------
 void updateConnectivity() {
+  bool was = wifiOnline;
   wifiOnline = digitalRead(PIN_WIFI_SW) == HIGH && WiFi.status() == WL_CONNECTED;
+  if (wifiOnline != was) Serial.printf("[NET] %s (chave=%d, wifi=%d)\n", wifiOnline ? "online" : "offline",
+                                       digitalRead(PIN_WIFI_SW), WiFi.status() == WL_CONNECTED);
   if (!wifiOnline) { if (mqtt.connected()) mqtt.disconnect(); return; }
   if (!mqtt.connected() && millis() - lastMqttTry > 5000) {
     lastMqttTry = millis();
@@ -148,20 +166,23 @@ void updateConnectivity() {
 }
 
 // ---------------- Display ----------------
+// Limpa a tela só quando o estado de alerta muda; no resto, o texto com fundo
+// sobrescreve o anterior (redesenhar 320x240 a cada amostra deixa tudo lento).
 void drawScreen(const Sample& s) {
+  static int lastAlert = -1;
   uint16_t bg = s.alert ? ILI9341_RED : ILI9341_BLACK;
-  tft.fillScreen(bg);
+  if (s.alert != lastAlert) { tft.fillScreen(bg); lastAlert = s.alert; }
   tft.setTextColor(ILI9341_WHITE, bg);
   tft.setTextSize(2);
   tft.setCursor(10, 10);  tft.print("CardioIA - Paciente 01");
   tft.setTextSize(3);
-  tft.setCursor(10, 60);  tft.printf("BPM:  %u", s.bpm);
+  tft.setCursor(10, 60);  tft.printf("BPM:  %-3u", s.bpm);
   tft.setCursor(10, 100); tft.printf("Temp: %.1fC", s.temp / 10.0);
   tft.setCursor(10, 140); tft.printf("Umid: %u%%", s.hum);
   tft.setTextSize(2);
   tft.setCursor(10, 190); tft.print(s.motion ? "Movimento: SIM" : "Movimento: NAO");
-  tft.setCursor(10, 220); tft.print(wifiOnline ? (mqtt.connected() ? "ONLINE" : "CONECTANDO") : "OFFLINE");
-  tft.setCursor(10, 250); tft.printf("Buffer: %d/%d", count, BUFFER_CAP);
+  tft.setCursor(10, 220); tft.print(wifiOnline ? (mqtt.connected() ? "ONLINE    " : "CONECTANDO") : "OFFLINE   ");
+  tft.setCursor(10, 250); tft.printf("Buffer: %-4d/%d", count, BUFFER_CAP);
   if (s.alert) { tft.setCursor(10, 285); tft.print("!!! ALERTA !!!"); }
 }
 
@@ -172,43 +193,45 @@ void setup() {
   pinMode(PIN_BEAT, INPUT_PULLUP);
   pinMode(PIN_WIFI_SW, INPUT);
   pinMode(PIN_LED, OUTPUT);
-  dht.setup(PIN_DHT, DHTesp::DHT22);
+  dht.begin();
 
   SPI.begin(TFT_SCK, TFT_MISO, TFT_MOSI, TFT_CS);
   tft.begin();
 
   WiFi.begin(WIFI_SSID, WIFI_PASS);  // conecta em segundo plano; a chave decide se "está online"
   mqtt.setServer(MQTT_HOST, MQTT_PORT);
+  mqtt.setKeepAlive(60);  // padrão é 15 s; com rede/simulador lento o broker derrubava a conexão
   Serial.println("CardioIA iniciado");
 }
 
 void loop() {
+  delay(10);  // libera a CPU (no Wokwi acelera muito a simulação); 10 ms não perde toques do botão
   readBeatButton();
   if (digitalRead(PIN_PIR)) lastMotionMs = millis();
   updateConnectivity();
   mqtt.loop();
+  if (wifiOnline && mqtt.connected()) syncBuffer();  // a cada volta: descarrega logo após reconectar
 
   if (millis() - lastSampleMs < SAMPLE_MS) return;
   lastSampleMs = millis();
 
-  TempAndHumidity th = dht.getTempAndHumidity();
-  if (isnan(th.temperature)) { Serial.println("[DHT] leitura inválida, amostra ignorada"); return; }
+  float temp = dht.readTemperature(), hum = dht.readHumidity();
+  if (isnan(temp) || isnan(hum)) { Serial.println("[DHT] leitura inválida, amostra ignorada"); return; }
 
   Sample s;
   s.t      = millis() / 1000;
-  s.temp   = (int16_t)(th.temperature * 10);
-  s.hum    = (uint8_t)th.humidity;
+  s.temp   = (int16_t)(temp * 10);
+  s.hum    = (uint8_t)hum;
   s.bpm    = currentBpm();
   s.motion = millis() - lastMotionMs < 3000;
   bool noMotion = millis() > NO_MOTION_MS && millis() - lastMotionMs > NO_MOTION_MS;
-  s.alert  = th.temperature > TEMP_MAX || s.bpm > BPM_MAX || (s.bpm > 0 && s.bpm < BPM_MIN) || noMotion;
+  s.alert  = temp > TEMP_MAX || s.bpm > BPM_MAX || (s.bpm > 0 && s.bpm < BPM_MIN) || noMotion;
 
   digitalWrite(PIN_LED, s.alert);   // alerta local funciona mesmo offline (Edge)
   pushSample(s);                     // toda leitura passa pelo buffer
   Serial.printf("[EDGE] T=%.1f H=%u BPM=%u MOV=%d ALERTA=%d buffer=%d descartadas=%lu %s\n",
-                th.temperature, s.hum, s.bpm, s.motion, s.alert, count, dropped,
+                temp, s.hum, s.bpm, s.motion, s.alert, count, dropped,
                 wifiOnline ? "online" : "offline");
 
-  if (wifiOnline && mqtt.connected()) syncBuffer();
   drawScreen(s);
 }
