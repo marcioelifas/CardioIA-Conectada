@@ -32,3 +32,15 @@ docker compose --profile sim up -d --build
 - O simulador publica sinais falsos a cada 2 s; pare-o com `docker compose stop simulador` quando o ESP32 real estiver ligado.
 - ESP32 na bancada: aponte `MQTT_HOST` do firmware para o IP deste PC na rede local (porta 1883 liberada no firewall do Windows).
 - **Wokwi → lab:** o ESP32 do Wokwi publica no HiveMQ público e o Mosquitto local tem uma ponte (`docker/mosquitto.conf`) que traz `cardioia/#` para o lab. Node-RED e painel funcionam sem mudar nada.
+
+### Teste automatizado (Wokwi CLI)
+
+Roda a simulação nos servidores do Wokwi, em velocidade real, e executa o roteiro [`cenario-teste.yaml`](fase3/wokwi/cenario-teste.yaml): online → offline → febre → pulso rápido → reconexão com rajada.
+
+```bash
+cd fase3/wokwi
+pio run -e esp32dev
+WOKWI_CLI_TOKEN=<seu token> wokwi-cli --scenario cenario-teste.yaml --serial-log-file serial.log .
+```
+
+O token é gerado em https://wokwi.com/dashboard/ci. Com o lab Docker de pé, as mensagens aparecem no dashboard. As evidências de uma execução estão em [`fase3/docs/evidencias/`](fase3/docs/evidencias/). O `platformio.ini` também tem o ambiente `esp32s3`, usado para gravar o firmware na bancada.

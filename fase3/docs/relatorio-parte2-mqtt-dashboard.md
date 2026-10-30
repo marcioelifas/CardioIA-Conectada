@@ -105,7 +105,20 @@ O broker público foi usado para simplificar a demonstração. **Ele não é ade
 
 ## 8. Evidências
 
-Inserir aqui os prints:
+**Chegada no broker (lado nuvem → Fog):** durante a execução do cenário automático (ver Parte 1), um assinante no Mosquitto local registrou as mensagens trazidas do HiveMQ pela ponte ([`evidencias/broker-local.log`](evidencias/broker-local.log)):
+
+```
+cardioia/paciente01/vitals {"t":2,"temp":36.8,"hum":55,"bpm":0,"motion":1,"alert":0,"pending":1}
+cardioia/paciente01/vitals {"t":4,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":0}
+cardioia/paciente01/vitals {"t":6,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":3}
+cardioia/paciente01/vitals {"t":8,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":2}
+cardioia/paciente01/vitals {"t":10,"temp":39.0,"hum":55,"bpm":0,"motion":0,"alert":1,"pending":1}
+cardioia/paciente01/vitals {"t":12,"temp":39.0,"hum":55,"bpm":150,"motion":0,"alert":1,"pending":0}
+```
+
+As 6 mensagens publicadas pelo ESP32 chegaram, sem perda e na ordem, incluindo as 4 que estavam no buffer offline. Com esses dados, o dashboard mostrou o alerta "Febre (39 °C)" e o medidor de temperatura em 39,0 °C.
+
+Prints:
 - [ ] Dashboard `/ui` em estado normal
 - [ ] Dashboard com alerta ativo (tocar o pulso rápido ou temperatura > 38 °C)
 - [ ] Monitor Serial do Wokwi mostrando `[EDGE]` offline e a rajada `[CLOUD]` na reconexão

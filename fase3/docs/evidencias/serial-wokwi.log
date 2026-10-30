@@ -1,0 +1,28 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1156
+load:0x40078000,len:11456
+ho 0 tail 12 room 4
+load:0x40080400,len:2972
+entry 0x400805dc
+CardioIA iniciado
+[EDGE] T=36.8 H=55 BPM=0 MOV=1 ALERTA=0 buffer=1 descartadas=0 offline
+[NET] online (chave=1, wifi=1)
+[EDGE] T=36.8 H=55 BPM=0 MOV=0 ALERTA=0 buffer=2 descartadas=0 online
+[MQTT] conectado[CLOUD] {"t":2,"temp":36.8,"hum":55,"bpm":0,"motion":1,"alert":0,"pending":1}
+[CLOUD] {"t":4,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":0}
+[NET] offline (chave=0, wifi=1)
+[EDGE] T=36.8 H=55 BPM=0 MOV=0 ALERTA=0 buffer=1 descartadas=0 offline
+[EDGE] T=36.8 H=55 BPM=0 MOV=0 ALERTA=0 buffer=2 descartadas=0 offline
+[EDGE] T=39.0 H=55 BPM=0 MOV=0 ALERTA=1 buffer=3 descartadas=0 offline
+[EDGE] T=39.0 H=55 BPM=150 MOV=0 ALERTA=1 buffer=4 descartadas=0 offline
+[NET] online (chave=1, wifi=1)
+[MQTT] conectado
+[CLOUD] {"t":6,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":3}
+[CLOUD] {"t":8,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":2}
+[CLOUD] {"t":10,"temp":39.0,"hum":55,"bpm":0,"motion":0,"alert":1,"pending":1}
+[CLOUD] {"t":12,"temp":39.0,"hum":55,"bpm":150,"motion":0,"alert":1,"pending":0

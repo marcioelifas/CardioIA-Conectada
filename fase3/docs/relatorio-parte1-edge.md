@@ -72,3 +72,29 @@ O SPIFFS é volátil no Wokwi: os dados se perdem ao encerrar a simulação. Por
 2. Mude a chave para **offline**. O Serial mostra `buffer=` crescendo e o display mostra "OFFLINE".
 3. Ajuste a temperatura do DHT22 para 39 °C. O LED acende e a tela fica vermelha, mesmo offline.
 4. Volte a chave para **online**. O Serial mostra a rajada de linhas `[CLOUD]` e o buffer volta a 0.
+
+**Teste automatizado:** o mesmo roteiro está em [`wokwi/cenario-teste.yaml`](../wokwi/cenario-teste.yaml) e roda no Wokwi CLI, em velocidade real (`pio run -e esp32dev` para compilar, depois `wokwi-cli --scenario cenario-teste.yaml`). O cenário derruba a rede, sobe a temperatura para 39 °C, toca o pulso a cada 400 ms e religa a rede, conferindo cada etapa no Serial.
+
+## 7. Evidência (Monitor Serial, execução do cenário)
+
+Log completo em [`evidencias/serial-wokwi.log`](evidencias/serial-wokwi.log):
+
+```
+[NET] online (chave=1, wifi=1)
+[MQTT] conectado
+[CLOUD] {"t":2,"temp":36.8,"hum":55,"bpm":0,"motion":1,"alert":0,"pending":1}
+[CLOUD] {"t":4,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":0}
+[NET] offline (chave=0, wifi=1)
+[EDGE] T=36.8 H=55 BPM=0 MOV=0 ALERTA=0 buffer=1 descartadas=0 offline
+[EDGE] T=36.8 H=55 BPM=0 MOV=0 ALERTA=0 buffer=2 descartadas=0 offline
+[EDGE] T=39.0 H=55 BPM=0 MOV=0 ALERTA=1 buffer=3 descartadas=0 offline    <- febre, alerta local sem rede
+[EDGE] T=39.0 H=55 BPM=150 MOV=0 ALERTA=1 buffer=4 descartadas=0 offline  <- taquicardia
+[NET] online (chave=1, wifi=1)
+[MQTT] conectado
+[CLOUD] {"t":6,"temp":36.8,...,"alert":0,"pending":3}                      <- rajada, do mais antigo
+[CLOUD] {"t":8,"temp":36.8,...,"alert":0,"pending":2}
+[CLOUD] {"t":10,"temp":39.0,...,"alert":1,"pending":1}
+[CLOUD] {"t":12,"temp":39.0,"hum":55,"bpm":150,...,"alert":1,"pending":0}
+```
+
+O alerta foi disparado offline (LED e tela), as 4 amostras ficaram no buffer e foram enviadas em ordem cronológica assim que a conexão voltou, com `pending` caindo até 0.

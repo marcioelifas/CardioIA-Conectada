@@ -1,0 +1,6 @@
+cardioia/paciente01/vitals {"t":2,"temp":36.8,"hum":55,"bpm":0,"motion":1,"alert":0,"pending":1}
+cardioia/paciente01/vitals {"t":4,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":0}
+cardioia/paciente01/vitals {"t":6,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":3}
+cardioia/paciente01/vitals {"t":8,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":2}
+cardioia/paciente01/vitals {"t":10,"temp":39.0,"hum":55,"bpm":0,"motion":0,"alert":1,"pending":1}
+cardioia/paciente01/vitals {"t":12,"temp":39.0,"hum":55,"bpm":150,"motion":0,"alert":1,"pending":0}

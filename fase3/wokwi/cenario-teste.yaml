@@ -1,0 +1,51 @@
+# Cenário automático do Wokwi CLI: percorre o roteiro de testes da Parte 1/2.
+# Rodar: wokwi-cli --scenario cenario-teste.yaml (com WOKWI_CLI_TOKEN definido)
+name: CardioIA - online, offline, alertas e sincronização
+version: 1
+author: CardioIA Conectada
+
+steps:
+  # 1. Online: conecta e publica
+  - wait-serial: '[MQTT] conectado'
+  - wait-serial: '[CLOUD]'
+
+  # 2. Cai a rede: amostras passam a acumular no buffer
+  - set-control:
+      part-id: wifi
+      control: value
+      value: 0
+  - wait-serial: '[NET] offline'
+  - delay: 4s
+
+  # 3. Febre durante o offline: alerta local (LED + tela) sem nuvem
+  - set-control:
+      part-id: dht
+      control: temperature
+      value: 39
+  - wait-serial: 'ALERTA=1'
+
+  # 4. Pulso rápido (~150 bpm, a cada 400 ms): taquicardia
+  - set-control: { part-id: beat, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: beat, control: pressed, value: 0 }
+  - delay: 300ms
+  - set-control: { part-id: beat, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: beat, control: pressed, value: 0 }
+  - delay: 300ms
+  - set-control: { part-id: beat, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: beat, control: pressed, value: 0 }
+  - delay: 300ms
+  - set-control: { part-id: beat, control: pressed, value: 1 }
+  - delay: 100ms
+  - set-control: { part-id: beat, control: pressed, value: 0 }
+  - wait-serial: 'BPM=15'
+
+  # 5. Rede volta: rajada [CLOUD] com o buffer em ordem
+  - set-control:
+      part-id: wifi
+      control: value
+      value: 1
+  - wait-serial: '[NET] online'
+  - wait-serial: '"pending":0'
