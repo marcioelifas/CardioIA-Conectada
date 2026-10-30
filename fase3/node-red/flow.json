@@ -1,12 +1,12 @@
 [
-  { "id": "tab_cardio", "type": "tab", "label": "CardioIA - Fase 3", "disabled": false, "info": "Assina cardioia/paciente01/vitals e exibe BPM, temperatura e alertas." },
+  { "id": "tab_cardio", "type": "tab", "label": "CardioIA - Fase 3", "disabled": false, "info": "Assina cardioia/g7f3a/paciente01/vitals e exibe BPM, temperatura e alertas." },
 
   { "id": "broker_hivemq", "type": "mqtt-broker", "name": "Broker MQTT (env MQTT_HOST)", "broker": "${MQTT_HOST}", "port": "1883", "clientid": "", "autoConnect": true, "usetls": false, "protocolVersion": "4", "keepalive": "60", "cleansession": true },
 
   { "id": "ui_tab_cardio", "type": "ui_tab", "name": "CardioIA", "icon": "favorite", "order": 1, "disabled": false, "hidden": false },
   { "id": "ui_grp_vitals", "type": "ui_group", "name": "Sinais vitais - Paciente 01", "tab": "ui_tab_cardio", "order": 1, "disp": true, "width": "12", "collapse": false },
 
-  { "id": "mqtt_in", "type": "mqtt in", "z": "tab_cardio", "name": "vitals", "topic": "cardioia/paciente01/vitals", "qos": "1", "datatype": "json", "broker": "broker_hivemq", "nl": false, "rap": true, "rh": 0, "inputs": 0, "x": 110, "y": 160, "wires": [["fn_split", "debug_raw"]] },
+  { "id": "mqtt_in", "type": "mqtt in", "z": "tab_cardio", "name": "vitals", "topic": "cardioia/g7f3a/paciente01/vitals", "qos": "1", "datatype": "json", "broker": "broker_hivemq", "nl": false, "rap": true, "rh": 0, "inputs": 0, "x": 110, "y": 160, "wires": [["fn_split", "debug_raw"]] },
 
   { "id": "debug_raw", "type": "debug", "z": "tab_cardio", "name": "payload bruto", "active": true, "tosidebar": true, "console": false, "complete": "payload", "targetType": "msg", "x": 320, "y": 60, "wires": [] },
 

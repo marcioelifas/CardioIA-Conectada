@@ -57,7 +57,7 @@ const char* WIFI_PASS = "";
 // HiveMQ Cloud (porta 8883 + WiFiClientSecure + usuário/senha).
 const char* MQTT_HOST  = "broker.hivemq.com";
 const int   MQTT_PORT  = 1883;
-const char* MQTT_TOPIC = "cardioia/paciente01/vitals";
+const char* MQTT_TOPIC = "cardioia/g7f3a/paciente01/vitals";
 
 // ---------------- Regras clínicas (limites do grupo) ----------------
 const float TEMP_MAX   = 38.0;   // febre

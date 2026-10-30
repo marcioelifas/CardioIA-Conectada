@@ -19,7 +19,7 @@
 - **Cloud (broker MQTT):** desacopla quem produz de quem consome. O ESP32 não sabe quem está ouvindo, e novos consumidores (Grafana, a API em Python do "Ir Além 1", um aplicativo médico) podem assinar o mesmo tópico sem alterar o firmware.
 - **Fog (Node-RED):** camada intermediária que recebe os dados, revalida as regras clínicas e apresenta o dashboard.
 
-**Laboratório local (Docker Compose):** para testar sem instalar nada além do Docker, `fase3/docker-compose.yml` sobe um Mosquitto local com *bridge* para o HiveMQ (assina `cardioia/#`), o Node-RED já com o fluxo e o `node-red-dashboard`, e um painel web extra em React (porta 8080, recebe por MQTT sobre WebSocket na porta 9001). Assim, o que o ESP32 do Wokwi publica no HiveMQ chega ao Node-RED local pela ponte. Na bancada, o ESP32-S3 pode publicar direto no Mosquitto do PC.
+**Laboratório local (Docker Compose):** para testar sem instalar nada além do Docker, `fase3/docker-compose.yml` sobe um Mosquitto local com *bridge* para o HiveMQ (assina só `cardioia/g7f3a/#`, o prefixo do grupo), o Node-RED já com o fluxo e o `node-red-dashboard`, e um painel web extra em React (porta 8080, recebe por MQTT sobre WebSocket na porta 9001). Assim, o que o ESP32 do Wokwi publica no HiveMQ chega ao Node-RED local pela ponte. Na bancada, o ESP32-S3 pode publicar direto no Mosquitto do PC.
 
 ## 2. Por que MQTT
 
@@ -37,11 +37,11 @@ O MQTT é um protocolo publish/subscribe sobre TCP, feito para dispositivos com 
 | Porta | 1883 (TCP sem TLS) |
 | Biblioteca | PubSubClient |
 | Client ID | `cardioia-<MAC do ESP32>` (único por dispositivo) |
-| Tópico | `cardioia/paciente01/vitals` |
+| Tópico | `cardioia/g7f3a/paciente01/vitals` |
 | Frequência | 1 mensagem a cada 2 s, ou uma rajada na sincronização do buffer |
 | Reconexão | nova tentativa a cada 5 s, sem bloquear a coleta |
 
-**Hierarquia de tópicos:** `cardioia/<paciente>/<tipo>`. Com o curinga `cardioia/+/vitals`, um painel de enfermaria assina todos os pacientes de uma vez.
+**Hierarquia de tópicos:** `cardioia/<grupo>/<paciente>/<tipo>`. Com o curinga `cardioia/g7f3a/+/vitals`, um painel de enfermaria assina todos os pacientes de uma vez.
 
 **Payload (JSON):**
 ```json
@@ -68,7 +68,7 @@ O MQTT é um protocolo publish/subscribe sobre TCP, feito para dispositivos com 
 
 **Nós do fluxo:**
 
-1. **`mqtt in` (vitals):** assina `cardioia/paciente01/vitals` com QoS 1 e saída já convertida de JSON para objeto.
+1. **`mqtt in` (vitals):** assina `cardioia/g7f3a/paciente01/vitals` com QoS 1 e saída já convertida de JSON para objeto.
 2. **`debug` (payload bruto):** mostra cada mensagem na barra lateral, útil para os prints de evidência.
 3. **`function` (Separar sinais + regra de alerta):** tem 4 saídas e distribui cada sinal para o seu widget. Ela **revalida** os limites clínicos (BPM > 120, BPM < 50, temperatura > 38 °C) e monta o texto do alerta com o motivo. Repetir a regra no Fog é intencional: se o firmware de um dispositivo estiver desatualizado ou com defeito, o painel central continua aplicando a regra vigente.
 4. **`ui_chart` (Frequência cardíaca):** gráfico de linha do BPM nos últimos 10 minutos, escala de 0 a 200. É o sinal vital pedido pelo enunciado.
@@ -93,7 +93,9 @@ O broker público foi usado para simplificar a demonstração. **Ele não é ade
 
 - **TLS:** HiveMQ Cloud na porta 8883 com `WiFiClientSecure` e validação do certificado da CA.
 - **Autenticação:** usuário e senha (ou certificado de cliente) por dispositivo, com ACL no broker restringindo cada dispositivo ao seu próprio tópico.
-- **Pseudonimização:** o tópico usa um identificador (`paciente01`), nunca nome ou CPF.
+- **Pseudonimização:** o tópico usa identificadores (`g7f3a` para o grupo, `paciente01` para o paciente), nunca nome, CPF ou matrícula.
+
+**O risco observado na prática:** ao conectar um cliente (MQTT Explorer) no lab, apareceram tópicos de outras equipes da turma sob o mesmo prefixo `cardioia/`, com mensagens retidas no broker público. Isso mostra os dois lados do problema: qualquer pessoa lê os nossos dados, e qualquer pessoa pode publicar no nosso tópico, o que geraria leituras e alertas falsos no dashboard. Como mitigação para a demonstração, o tópico ganhou um prefixo exclusivo do grupo (`cardioia/g7f3a/...`) e a ponte do lab passou a assinar só esse prefixo, sem importar dados de terceiros. A solução definitiva é a da lista acima: broker privado com TLS, autenticação e ACL por tópico.
 - **Credenciais fora do código:** usar um `secrets.h` ignorado pelo git ou provisionamento seguro.
 - **Minimização:** enviar só o necessário. O alerta é decidido no Edge, o que reduz a dependência da nuvem e o volume de dados.
 
@@ -108,18 +110,32 @@ O broker público foi usado para simplificar a demonstração. **Ele não é ade
 **Chegada no broker (lado nuvem → Fog):** durante a execução do cenário automático (ver Parte 1), um assinante no Mosquitto local registrou as mensagens trazidas do HiveMQ pela ponte ([`evidencias/broker-local.log`](evidencias/broker-local.log)):
 
 ```
-cardioia/paciente01/vitals {"t":2,"temp":36.8,"hum":55,"bpm":0,"motion":1,"alert":0,"pending":1}
-cardioia/paciente01/vitals {"t":4,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":0}
-cardioia/paciente01/vitals {"t":6,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":3}
-cardioia/paciente01/vitals {"t":8,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":2}
-cardioia/paciente01/vitals {"t":10,"temp":39.0,"hum":55,"bpm":0,"motion":0,"alert":1,"pending":1}
-cardioia/paciente01/vitals {"t":12,"temp":39.0,"hum":55,"bpm":150,"motion":0,"alert":1,"pending":0}
+cardioia/g7f3a/paciente01/vitals {"t":2,"temp":36.8,"hum":55,"bpm":0,"motion":1,"alert":0,"pending":1}
+cardioia/g7f3a/paciente01/vitals {"t":4,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":0}
+cardioia/g7f3a/paciente01/vitals {"t":6,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":3}
+cardioia/g7f3a/paciente01/vitals {"t":8,"temp":36.8,"hum":55,"bpm":0,"motion":0,"alert":0,"pending":2}
+cardioia/g7f3a/paciente01/vitals {"t":10,"temp":39.0,"hum":55,"bpm":0,"motion":0,"alert":1,"pending":1}
+cardioia/g7f3a/paciente01/vitals {"t":12,"temp":39.0,"hum":55,"bpm":150,"motion":0,"alert":1,"pending":0}
 ```
 
 As 6 mensagens publicadas pelo ESP32 chegaram, sem perda e na ordem, incluindo as 4 que estavam no buffer offline. Com esses dados, o dashboard mostrou o alerta "Febre (39 °C)" e o medidor de temperatura em 39,0 °C.
 
-Prints:
-- [ ] Dashboard `/ui` em estado normal
-- [ ] Dashboard com alerta ativo (tocar o pulso rápido ou temperatura > 38 °C)
-- [ ] Monitor Serial do Wokwi mostrando `[EDGE]` offline e a rajada `[CLOUD]` na reconexão
-- [ ] Aba debug do Node-RED com os payloads recebidos
+**Prints:** capturados durante a execução do cenário, com o firmware real do Wokwi alimentando o lab local.
+
+**Dashboard Node-RED em estado normal** (36,8 °C, status verde, sincronizando a última amostra):
+
+![Dashboard normal](evidencias/02-dashboard-normal.png)
+
+**Dashboard com alerta ativo**, depois da reconexão: as amostras do buffer chegaram, o gráfico mostra o salto para 150 bpm e o status traz os dois motivos:
+
+![Dashboard em alerta](evidencias/07-dashboard-alerta.png)
+
+**Aba debug do Node-RED** com os payloads JSON recebidos. As 4 últimas mensagens têm o mesmo horário de chegada (14:54:24): é a rajada de sincronização do buffer offline, com `t` (instante da coleta) em ordem crescente.
+
+![Debug do Node-RED](evidencias/03-debug-nodered.png)
+
+**Painel extra em React**, mesmo tópico e mesmo instante:
+
+| Normal | Alerta |
+|---|---|
+| ![Painel normal](evidencias/02b-painel-normal.png) | ![Painel em alerta](evidencias/08-painel-alerta.png) |

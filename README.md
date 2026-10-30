@@ -18,7 +18,11 @@ O **CardioIA Conectada** integra dispositivos, telemetria clínica e modelos int
 | [`fase3/painel/`](fase3/painel/) | Painel web extra (React + Gauge do 21st.dev), lê o MQTT via WebSocket |
 | [`fase3/docs/`](fase3/docs/) | Relatórios da Parte 1 (Edge) e da Parte 2 (MQTT + dashboard) |
 
-**Link do projeto Wokwi:** _adicionar após salvar o projeto no Wokwi_
+**Link do projeto Wokwi:** https://wokwi.com/projects/479325303590176769
+
+| Circuito (Wokwi) | Dashboard Node-RED em alerta |
+|---|---|
+| ![Circuito](fase3/docs/evidencias/01-circuito-wokwi.png) | ![Dashboard em alerta](fase3/docs/evidencias/07-dashboard-alerta.png) |
 
 ### Lab local (Docker)
 
@@ -31,7 +35,7 @@ docker compose --profile sim up -d --build
 - Painel web (extra): http://localhost:8080
 - O simulador publica sinais falsos a cada 2 s; pare-o com `docker compose stop simulador` quando o ESP32 real estiver ligado.
 - ESP32 na bancada: aponte `MQTT_HOST` do firmware para o IP deste PC na rede local (porta 1883 liberada no firewall do Windows).
-- **Wokwi → lab:** o ESP32 do Wokwi publica no HiveMQ público e o Mosquitto local tem uma ponte (`docker/mosquitto.conf`) que traz `cardioia/#` para o lab. Node-RED e painel funcionam sem mudar nada.
+- **Wokwi → lab:** o ESP32 do Wokwi publica no HiveMQ público e o Mosquitto local tem uma ponte (`docker/mosquitto.conf`) que traz só `cardioia/g7f3a/#` (o prefixo do grupo) para o lab. Node-RED e painel funcionam sem mudar nada.
 
 ### Teste automatizado (Wokwi CLI)
 

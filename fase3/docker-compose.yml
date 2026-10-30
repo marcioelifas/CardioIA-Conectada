@@ -57,7 +57,7 @@ services:
           mov=$$((RANDOM % 2))
           alert=$$(( bpm > 120 || temp > 380 ))
           msg="{\"t\":$$t0,\"temp\":$$((temp / 10)).$$((temp % 10)),\"hum\":55,\"bpm\":$$bpm,\"motion\":$$mov,\"alert\":$$alert,\"pending\":0}"
-          mosquitto_pub -h mosquitto -t cardioia/paciente01/vitals -m "$$msg"
+          mosquitto_pub -h mosquitto -t cardioia/g7f3a/paciente01/vitals -m "$$msg"
           echo "$$msg"
           sleep 2
         done

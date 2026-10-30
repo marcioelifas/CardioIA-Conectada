@@ -6,7 +6,7 @@ import { Gauge } from './components/ui/gauge'
 type Vitals = { t: number; temp: number; hum: number; bpm: number; motion: number; alert: number; pending: number }
 
 const BROKER = `ws://${location.hostname}:9001`  // mesmo host do painel: funciona também de outro PC na rede
-const TOPIC = 'cardioia/paciente01/vitals'
+const TOPIC = 'cardioia/g7f3a/paciente01/vitals'
 const HISTORY = 90                                // 90 amostras x 2 s = 3 min no gráfico
 const TEMP_MIN = 34, TEMP_MAX = 42
 
