@@ -17,7 +17,8 @@ O **CardioIA Conectada** integra dispositivos, telemetria clínica e modelos int
 | [`fase3/docker-compose.yml`](fase3/docker-compose.yml) | Lab local: broker Mosquitto + Node-RED + simulador de sinais |
 | [`fase3/painel/`](fase3/painel/) | Painel web extra (React + Gauge do 21st.dev), lê o MQTT via WebSocket |
 | [`fase3/ir-alem-1/`](fase3/ir-alem-1/) | **Ir Além 1:** API REST (FastAPI) com a lógica de risco + cliente REST que dispara e-mail de alerta |
-| [`fase3/docs/`](fase3/docs/) | Relatórios da Parte 1 (Edge), da Parte 2 (MQTT + dashboard) e do [Ir Além 1](fase3/docs/relatorio-ir-alem-1-rest-email.md) |
+| [`fase3/ir-alem-2/`](fase3/ir-alem-2/) | **Ir Além 2:** notebook comparando regressão logística e rede neuromórfica LIF em séries de BPM ([README e link do vídeo](fase3/ir-alem-2/README.md)) |
+| [`fase3/docs/`](fase3/docs/) | Relatórios da Parte 1 (Edge), da Parte 2 (MQTT + dashboard), do [Ir Além 1](fase3/docs/relatorio-ir-alem-1-rest-email.md) e do [Ir Além 2](fase3/docs/relatorio-ir-alem-2-ia.md) |
 
 **Link do projeto Wokwi:** https://wokwi.com/projects/479325303590176769
 
