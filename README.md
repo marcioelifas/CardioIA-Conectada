@@ -88,7 +88,7 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 - <b>Listagem de Links</b>:
   - Projeto no Wokwi: https://wokwi.com/projects/479325303590176769
-  - Vídeo do Ir Além 2 (YouTube, não listado): _link a inserir_
+  - Vídeo do Ir Além 2 (YouTube, não listado): https://youtu.be/gQoTYg0JhG8
   - Relatórios:
     - [Parte 1 – Edge Computing](fase3/docs/relatorio-parte1-edge.md)
     - [Parte 2 – MQTT e dashboard](fase3/docs/relatorio-parte2-mqtt-dashboard.md)

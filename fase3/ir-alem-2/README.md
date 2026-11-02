@@ -56,7 +56,7 @@ O estudo aplica IA à **série temporal de frequência cardíaca** para detectar
 
 ## 📎 Links e Observações
 
-- <b>Vídeo de apresentação (YouTube, não listado)</b>: _link a inserir_
+- <b>Vídeo de apresentação (YouTube, não listado)</b>: https://youtu.be/gQoTYg0JhG8
 - <b>Relatório comparativo</b>: [`../docs/relatorio-ir-alem-2-ia.md`](../docs/relatorio-ir-alem-2-ia.md)
 - <b>Limitação</b>: a base é sintética. O próximo passo é validar com séries reais do PhysioNet (MIT-BIH) e com as leituras do ESP32 da bancada.
 
