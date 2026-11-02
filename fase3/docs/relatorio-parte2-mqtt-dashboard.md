@@ -75,6 +75,7 @@ O MQTT é um protocolo publish/subscribe sobre TCP, feito para dispositivos com 
 5. **`ui_gauge` (Temperatura):** medidor de 34 a 42 °C com faixas de cor: verde até 37,5, amarelo até 38 e vermelho acima disso.
 6. **`ui_template` (LED de alerta):** indicador visual de alerta (LED virtual). Mostra ● verde "Normal" ou ● vermelho "ALERTA: Taquicardia (135 bpm), Febre (38.6 °C)". Foi usado `ui_template` com `ng-style` porque o `ui_text` remove atributos de estilo e a bolinha não mudava de cor.
 7. **`ui_text` (Movimento):** mostra "Sim"/"Não" e, durante uma sincronização, quantas amostras ainda estão chegando.
+8. **`ui_toast` (Notificação de alerta):** alerta automático. Quando surge um alerta novo, uma notificação com o motivo aparece na tela de quem estiver com o dashboard aberto, mesmo sem ninguém olhar o LED. A função guarda o último alerta (`context`) e só notifica quando o motivo muda, para não repetir o aviso a cada 2 s.
 
 **Painel extra (React, `fase3/painel`):** além do dashboard do Node-RED (que é a entrega avaliada), há um painel web em `http://localhost:8080` que assina o mesmo tópico via WebSocket: gráfico de BPM com as faixas 50/120 tracejadas, medidor de temperatura, LED de status com o motivo do alerta, movimento, umidade e amostras pendentes de sincronização. Ele mostra outro consumidor do mesmo tópico funcionando sem nenhuma mudança no firmware.
 
@@ -129,6 +130,10 @@ As 6 mensagens publicadas pelo ESP32 chegaram, sem perda e na ordem, incluindo a
 **Dashboard com alerta ativo**, depois da reconexão: as amostras do buffer chegaram, o gráfico mostra o salto para 150 bpm e o status traz os dois motivos:
 
 ![Dashboard em alerta](evidencias/07-dashboard-alerta.png)
+
+**Alerta automático:** a notificação aparece no canto da tela assim que chega uma leitura fora da faixa:
+
+![Notificação automática de alerta](evidencias/09-dashboard-notificacao.png)
 
 **Aba debug do Node-RED** com os payloads JSON recebidos. As 4 últimas mensagens têm o mesmo horário de chegada (14:54:24): é a rajada de sincronização do buffer offline, com `t` (instante da coleta) em ordem crescente.
 

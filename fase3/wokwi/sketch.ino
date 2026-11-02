@@ -25,17 +25,19 @@
 // O mesmo sketch roda nas duas placas: ESP32-S3 (bancada) e ESP32 clássico (Wokwi,
 // onde o DHT22 não responde na simulação do S3). No clássico, GPIO 6-11 são da flash.
 #if CONFIG_IDF_TARGET_ESP32S3
+// Display e PIR seguem a fiação já montada na bancada (projeto do totem).
 #define PIN_DHT     4
-#define PIN_PIR     5
+#define PIN_PIR     15
 #define PIN_BEAT    6    // botão de pulso (INPUT_PULLUP, ativo em LOW)
 #define PIN_WIFI_SW 7    // chave: HIGH = online, LOW = offline
-#define PIN_LED     15   // LED de alerta
+#define PIN_LED     5    // LED de alerta
 #define TFT_SCK     12
 #define TFT_MOSI    11
 #define TFT_MISO    13
 #define TFT_CS      10
 #define TFT_DC      9
-#define TFT_RST     14
+#define TFT_RST     46
+#define TOUCH_CS    14   // touch XPT2046 no mesmo SPI: fica em HIGH para não atrapalhar o display
 #else
 #define PIN_DHT     15
 #define PIN_PIR     27
@@ -51,11 +53,16 @@
 #endif
 
 // ---------------- Rede / MQTT ----------------
-const char* WIFI_SSID = "Wokwi-GUEST";
-const char* WIFI_PASS = "";
+// Bancada: secrets.h (fora do git, ver secrets.example.h) troca a rede e o broker.
+#if CONFIG_IDF_TARGET_ESP32S3 && __has_include("secrets.h")
+#include "secrets.h"
+#else
+#define WIFI_SSID "Wokwi-GUEST"
+#define WIFI_PASS ""
 // ponytail: broker público sem TLS para facilitar a demo; em produção usar
 // HiveMQ Cloud (porta 8883 + WiFiClientSecure + usuário/senha).
-const char* MQTT_HOST  = "broker.hivemq.com";
+#define MQTT_HOST "broker.hivemq.com"
+#endif
 const int   MQTT_PORT  = 1883;
 const char* MQTT_TOPIC = "cardioia/g7f3a/paciente01/vitals";
 
@@ -194,6 +201,10 @@ void setup() {
   pinMode(PIN_WIFI_SW, INPUT);
   pinMode(PIN_LED, OUTPUT);
   dht.begin();
+#ifdef TOUCH_CS
+  pinMode(TOUCH_CS, OUTPUT);
+  digitalWrite(TOUCH_CS, HIGH);
+#endif
 
   SPI.begin(TFT_SCK, TFT_MISO, TFT_MOSI, TFT_CS);
   tft.begin();

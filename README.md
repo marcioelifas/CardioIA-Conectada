@@ -31,7 +31,7 @@ cd fase3
 docker compose --profile sim up -d --build
 ```
 
-- Dashboard Node-RED (entrega): http://localhost:1880/ui · Editor: http://localhost:1880
+- Dashboard Node-RED (entrega): http://localhost:1880/ui · Editor: http://localhost:1880. Ele tem alerta automático: o LED de status fica vermelho e aparece uma notificação na tela sempre que surge um alerta novo.
 - Painel web (extra): http://localhost:8080
 - O simulador publica sinais falsos a cada 2 s; pare-o com `docker compose stop simulador` quando o ESP32 real estiver ligado.
 - ESP32 na bancada: aponte `MQTT_HOST` do firmware para o IP deste PC na rede local (porta 1883 liberada no firewall do Windows).
@@ -47,4 +47,62 @@ pio run -e esp32dev
 WOKWI_CLI_TOKEN=<seu token> wokwi-cli --scenario cenario-teste.yaml --serial-log-file serial.log .
 ```
 
-O token é gerado em https://wokwi.com/dashboard/ci. Com o lab Docker de pé, as mensagens aparecem no dashboard. As evidências de uma execução estão em [`fase3/docs/evidencias/`](fase3/docs/evidencias/). O `platformio.ini` também tem o ambiente `esp32s3`, usado para gravar o firmware na bancada.
+O token é gerado em https://wokwi.com/dashboard/ci.
+
+### Bancada (ESP32-S3 DevKitC-1 N16R8)
+
+O mesmo `sketch.ino` roda na placa real. Os pinos mudam sozinhos conforme a placa (`#if CONFIG_IDF_TARGET_ESP32S3`).
+
+| Componente | Pino do componente | ESP32-S3 (bancada) | ESP32 (Wokwi) |
+|---|---|---|---|
+| **Display ILI9341 2.4"** | VCC / LED | 3V3 | 3V3 |
+| | GND | GND | GND |
+| | CS | GPIO 10 | GPIO 5 |
+| | RESET | GPIO 46 | GPIO 22 |
+| | DC | GPIO 9 | GPIO 4 |
+| | SDI (MOSI) | GPIO 11 | GPIO 23 |
+| | SCK | GPIO 12 | GPIO 18 |
+| | SDO (MISO) | GPIO 13 | GPIO 19 |
+| | T_CS (touch, não usado) | GPIO 14, mantido em HIGH | – |
+| **DHT22 (AM2302)** | VCC | 3V3 | 3V3 |
+| | DATA | GPIO 4 (pull-up 10 kΩ p/ 3V3 se for o sensor sem placa) | GPIO 15 |
+| | GND | GND | GND |
+| **PIR HC-SR501** | VCC | 5V | 5V |
+| | OUT | GPIO 15 | GPIO 27 |
+| | GND | GND | GND |
+| **Botão de pulso** | terminal 1 | GPIO 6 (pull-up interno) | GPIO 26 |
+| | terminal 2 | GND | GND |
+| **Chave "Wi-Fi"** | comum (meio) | GPIO 7 | GPIO 25 |
+| | lados | 3V3 = online · GND = offline | idem |
+| **LED de alerta** | ânodo (perna longa) | GPIO 5 via resistor 220 Ω | GPIO 2 |
+| | cátodo | GND | GND |
+
+```
+                 ESP32-S3 DevKitC-1
+              ┌──────────────────────┐
+  DHT22 DATA ─┤ GPIO4         GPIO10 ├─ CS   ┐
+  LED+220Ω  ──┤ GPIO5         GPIO9  ├─ DC   │
+  Botão     ──┤ GPIO6         GPIO11 ├─ MOSI │ ILI9341
+  Chave Wi-Fi─┤ GPIO7         GPIO12 ├─ SCK  │ (SPI)
+  PIR OUT   ──┤ GPIO15        GPIO13 ├─ MISO │
+              │               GPIO46 ├─ RST  ┘
+              │               GPIO14 ├─ T_CS (HIGH)
+  DHT22/TFT ──┤ 3V3              5V  ├─ PIR VCC
+  todos     ──┤ GND             GND  ├─ todos
+              └──────────┬───────────┘
+                    USB (porta UART)
+```
+
+Sem chave deslizante, um jumper resolve: GPIO 7 no 3V3 = online, no GND = offline (é o teste do buffer).
+
+**Gravar a placa (no PC da bancada):**
+
+1. Copie `fase3/wokwi/secrets.example.h` para `secrets.h` (fica fora do git) e preencha a rede **2,4 GHz** e o `MQTT_HOST` com o IP do PC que roda o lab Docker. O ESP32 e esse PC precisam estar na mesma rede.
+2. Grave e abra o monitor serial:
+
+```bash
+cd fase3/wokwi
+pio run -e esp32s3 -t upload -t monitor
+```
+
+No serial devem aparecer `[MQTT] conectado` e as linhas `[CLOUD] {...}`. Nesse momento o dashboard do PC do lab começa a receber os dados. Com o lab Docker de pé, as mensagens aparecem no dashboard. As evidências de uma execução estão em [`fase3/docs/evidencias/`](fase3/docs/evidencias/). O `platformio.ini` também tem o ambiente `esp32s3`, usado para gravar o firmware na bancada.
