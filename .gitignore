@@ -38,3 +38,4 @@ fase3/node-red/*
 # PlatformIO / Wokwi CLI (build local do firmware)
 .pio/
 fase3/wokwi/secrets.h
+apresentacao/

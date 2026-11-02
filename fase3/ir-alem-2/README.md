@@ -7,7 +7,6 @@ Comparação entre **regressão logística** e uma **rede neuromórfica LIF** (2
 | [`cardioia_lif_vs_logistica.ipynb`](cardioia_lif_vs_logistica.ipynb) | Notebook comentado, já executado (resultados e gráficos visíveis no GitHub) |
 | [`../docs/relatorio-ir-alem-2-ia.md`](../docs/relatorio-ir-alem-2-ia.md) | Relatório comparativo |
 | [`../docs/evidencias/ir-alem-2/`](../docs/evidencias/ir-alem-2/) | Figuras geradas pelo notebook |
-| [`roteiro-video.md`](roteiro-video.md) | Roteiro do vídeo de até 4 minutos |
 
 **Vídeo (YouTube, não listado):** _link a inserir_
 
