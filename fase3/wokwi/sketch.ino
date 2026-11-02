@@ -29,7 +29,8 @@
 #define PIN_DHT     4
 #define PIN_PIR     15
 #define PIN_BEAT    6    // botão de pulso (INPUT_PULLUP, ativo em LOW)
-#define PIN_WIFI_SW 7    // solto = online; jumper p/ GND = offline (sem chave na bancada)
+#define PIN_WIFI_SW 0    // botão BOOT da placa: cada toque liga/desliga a rede simulada
+#define WIFI_SW_TOGGLE   // bancada não tem chave deslizante
 #define PIN_LED     5    // LED de alerta
 #define TFT_SCK     12
 #define TFT_MOSI    11
@@ -159,11 +160,26 @@ void syncBuffer() {
 }
 
 // ---------------- Conectividade ----------------
+// Wokwi: chave deslizante (HIGH = online). Bancada: botão BOOT alterna a cada toque.
+bool netSwitch = true;
+void readNetSwitch() {
+#ifdef WIFI_SW_TOGGLE
+  static bool last = HIGH;
+  static unsigned long lastMs = 0;
+  bool now = digitalRead(PIN_WIFI_SW);
+  if (last == HIGH && now == LOW && millis() - lastMs > 300) { netSwitch = !netSwitch; lastMs = millis(); }
+  last = now;
+#else
+  netSwitch = digitalRead(PIN_WIFI_SW) == HIGH;
+#endif
+}
+
 void updateConnectivity() {
   bool was = wifiOnline;
-  wifiOnline = digitalRead(PIN_WIFI_SW) == HIGH && WiFi.status() == WL_CONNECTED;
+  readNetSwitch();
+  wifiOnline = netSwitch && WiFi.status() == WL_CONNECTED;
   if (wifiOnline != was) Serial.printf("[NET] %s (chave=%d, wifi=%d)\n", wifiOnline ? "online" : "offline",
-                                       digitalRead(PIN_WIFI_SW), WiFi.status() == WL_CONNECTED);
+                                       netSwitch, WiFi.status() == WL_CONNECTED);
   if (!wifiOnline) { if (mqtt.connected()) mqtt.disconnect(); return; }
   if (!mqtt.connected() && millis() - lastMqttTry > 5000) {
     lastMqttTry = millis();
@@ -198,7 +214,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(PIN_PIR, INPUT);
   pinMode(PIN_BEAT, INPUT_PULLUP);
-  pinMode(PIN_WIFI_SW, INPUT_PULLUP);  // solto = online; jumper p/ GND = offline
+  pinMode(PIN_WIFI_SW, INPUT_PULLUP);
   pinMode(PIN_LED, OUTPUT);
   dht.begin();
 #ifdef TOUCH_CS
@@ -212,7 +228,7 @@ void setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);  // conecta em segundo plano; a chave decide se "está online"
   mqtt.setServer(MQTT_HOST, MQTT_PORT);
   mqtt.setKeepAlive(60);  // padrão é 15 s; com rede/simulador lento o broker derrubava a conexão
-  Serial.println("CardioIA iniciado");
+  Serial.printf("CardioIA iniciado | rede: %s | broker: %s\n", WIFI_SSID, MQTT_HOST);
 }
 
 void loop() {
@@ -240,9 +256,10 @@ void loop() {
 
   digitalWrite(PIN_LED, s.alert);   // alerta local funciona mesmo offline (Edge)
   pushSample(s);                     // toda leitura passa pelo buffer
-  Serial.printf("[EDGE] T=%.1f H=%u BPM=%u MOV=%d ALERTA=%d buffer=%d descartadas=%lu %s\n",
+  // wifi = WiFi.status(): 3 conectado, 1 rede não encontrada, 4 senha/falha, 6 desconectado
+  Serial.printf("[EDGE] T=%.1f H=%u BPM=%u MOV=%d ALERTA=%d buffer=%d descartadas=%lu %s (chave=%d wifi=%d mqtt=%d)\n",
                 temp, s.hum, s.bpm, s.motion, s.alert, count, dropped,
-                wifiOnline ? "online" : "offline");
+                wifiOnline ? "online" : "offline", netSwitch, WiFi.status(), mqtt.state());
 
   drawScreen(s);
 }

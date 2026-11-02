@@ -100,3 +100,32 @@ Log completo em [`evidencias/serial-wokwi.log`](evidencias/serial-wokwi.log):
 ```
 
 O alerta foi disparado offline (LED e tela), as 4 amostras ficaram no buffer e foram enviadas em ordem cronológica assim que a conexão voltou, com `pending` caindo até 0.
+
+## 8. Validação em hardware real (bancada, ESP32-S3)
+
+O mesmo firmware foi gravado em um **ESP32-S3 DevKitC-1 N16R8** com DHT22, PIR, botão de pulso, LED e display ILI9341 reais. O esquema de ligações está no [README](../../README.md#bancada-esp32-s3-devkitc-1-n16r8). Diferenças em relação ao Wokwi:
+
+- **Rede:** Wi-Fi 2,4 GHz do laboratório. A placa publica direto no Mosquitto do PC do lab, e o SSID, a senha e o IP do broker ficam em `secrets.h`, fora do git.
+- **"Wi-Fi" simulado:** a placa não tem chave deslizante. O botão **BOOT** (GPIO 0) faz esse papel: um toque deixa a placa offline e outro reconecta.
+
+**Resultado** ([`evidencias/broker-bancada.log`](evidencias/broker-bancada.log), horário de chegada no broker):
+
+```
+10:19:34 {"t":100,"temp":21.6,"hum":82,"bpm":0,"motion":1,"alert":0,"pending":0}
+10:19:36 {"t":102,"temp":21.6,"hum":82,"bpm":0,"motion":1,"alert":0,"pending":0}
+                                                   <- BOOT: offline por 17 s
+10:19:53 {"t":104,"temp":21.6,"hum":82,"bpm":0,"motion":1,"alert":0,"pending":7}   <- BOOT: rajada
+10:19:53 {"t":106,...,"pending":6}
+   ...
+10:19:54 {"t":118,"temp":21.6,"hum":82,"bpm":0,"motion":1,"alert":0,"pending":0}
+10:19:54 {"t":120,"temp":21.6,"hum":82,"bpm":0,"motion":0,"alert":0,"pending":0}   <- volta ao normal
+```
+
+- **Leituras reais:** temperatura ambiente de 21,6 °C e umidade de 82 % no DHT22, movimento detectado pelo PIR e BPM gerado pelo botão.
+- **Buffer offline:** as 8 amostras coletadas sem rede (t = 104 a 118 s) chegaram em cerca de 1 s após a reconexão, em ordem e sem perda, com `pending` caindo de 7 a 0.
+- **Alerta de imobilidade:** em outra execução, a placa ficou mais de 60 s sem detectar movimento e publicou `"alert":1` com BPM 0. É o alerta de possível queda ou inconsciência, disparado só pelo Edge.
+- **Lições da bancada:** o nome da rede precisa ser exatamente igual ao do roteador (maiúsculas, hífen). Para facilitar o diagnóstico, cada linha `[EDGE]` do Serial passou a mostrar o estado da chave, o código do `WiFi.status()` e o do MQTT. Além disso, se o DHT22 se solta, a amostra é descartada (`[DHT] leitura inválida`) e o display deixa de atualizar.
+
+| Dashboard Node-RED com a placa real | Painel web |
+|---|---|
+| ![Dashboard bancada](evidencias/10-dashboard-bancada.png) | ![Painel bancada](evidencias/11-painel-bancada.png) |
