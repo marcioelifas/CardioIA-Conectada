@@ -29,7 +29,7 @@
 #define PIN_DHT     4
 #define PIN_PIR     15
 #define PIN_BEAT    6    // botão de pulso (INPUT_PULLUP, ativo em LOW)
-#define PIN_WIFI_SW 7    // chave: HIGH = online, LOW = offline
+#define PIN_WIFI_SW 7    // solto = online; jumper p/ GND = offline (sem chave na bancada)
 #define PIN_LED     5    // LED de alerta
 #define TFT_SCK     12
 #define TFT_MOSI    11
@@ -198,7 +198,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(PIN_PIR, INPUT);
   pinMode(PIN_BEAT, INPUT_PULLUP);
-  pinMode(PIN_WIFI_SW, INPUT);
+  pinMode(PIN_WIFI_SW, INPUT_PULLUP);  // solto = online; jumper p/ GND = offline
   pinMode(PIN_LED, OUTPUT);
   dht.begin();
 #ifdef TOUCH_CS

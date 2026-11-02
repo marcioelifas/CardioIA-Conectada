@@ -74,8 +74,8 @@ O mesmo `sketch.ino` roda na placa real. Os pinos mudam sozinhos conforme a plac
 | | GND | GND | GND |
 | **Botão de pulso** | terminal 1 | GPIO 6 (pull-up interno) | GPIO 26 |
 | | terminal 2 | GND | GND |
-| **Chave "Wi-Fi"** | comum (meio) | GPIO 7 | GPIO 25 |
-| | lados | 3V3 = online · GND = offline | idem |
+| **"Wi-Fi" (simulado)** | nada ligado = online | GPIO 7 (pull-up interno) | chave deslizante no GPIO 25 |
+| | jumper GPIO 7 → GND = offline | | |
 | **LED de alerta** | ânodo (perna longa) | GPIO 5 via resistor 220 Ω | GPIO 2 |
 | | cátodo | GND | GND |
 
@@ -85,7 +85,7 @@ O mesmo `sketch.ino` roda na placa real. Os pinos mudam sozinhos conforme a plac
   DHT22 DATA ─┤ GPIO4         GPIO10 ├─ CS   ┐
   LED+220Ω  ──┤ GPIO5         GPIO9  ├─ DC   │
   Botão     ──┤ GPIO6         GPIO11 ├─ MOSI │ ILI9341
-  Chave Wi-Fi─┤ GPIO7         GPIO12 ├─ SCK  │ (SPI)
+  Jumper GND ─┤ GPIO7         GPIO12 ├─ SCK  │ (SPI)
   PIR OUT   ──┤ GPIO15        GPIO13 ├─ MISO │
               │               GPIO46 ├─ RST  ┘
               │               GPIO14 ├─ T_CS (HIGH)
@@ -95,7 +95,7 @@ O mesmo `sketch.ino` roda na placa real. Os pinos mudam sozinhos conforme a plac
                     USB (porta UART)
 ```
 
-Sem chave deslizante, um jumper resolve: GPIO 7 no 3V3 = online, no GND = offline (é o teste do buffer).
+Na bancada não há chave: o GPIO 7 fica solto (online). Para testar o buffer offline, encoste um jumper do GPIO 7 no GND e solte para reconectar.
 
 **Gravar a placa (no PC da bancada):**
 

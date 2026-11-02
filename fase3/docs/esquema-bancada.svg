@@ -23,7 +23,7 @@
   <!-- Sinais à esquerda -->
   <g stroke="#1e6fd9" stroke-width="2.5" fill="none">
     <path d="M400 196 H260"/><path d="M400 246 H260"/><path d="M400 296 H260"/>
-    <path d="M400 346 H260"/><path d="M400 396 H330"/>
+    <path d="M400 346 H260" stroke-dasharray="6 5"/><path d="M400 396 H330"/>
   </g>
   <!-- Alimentação à esquerda -->
   <path d="M400 456 H70 V215" stroke="#d62828" stroke-width="2.5" fill="none"/>
@@ -31,7 +31,8 @@
   <path d="M70 215 H110" stroke="#d62828" stroke-width="2.5"/>
   <path d="M400 486 H90 V262 H110" stroke="#f08c00" stroke-width="2.5" fill="none"/>
   <path d="M400 516 H50 V180 H110" stroke="#111" stroke-width="2.5" fill="none"/>
-  <path d="M50 280 H110 M50 312 H110 M50 335 H110 M50 412 H110" stroke="#111" stroke-width="2.5" fill="none"/>
+  <path d="M50 280 H110 M50 312 H110 M50 412 H110" stroke="#111" stroke-width="2.5" fill="none"/>
+  <path d="M50 375 H110" stroke="#111" stroke-width="2.5" stroke-dasharray="6 5" fill="none"/>
 
   <!-- DHT22 -->
   <rect x="110" y="165" width="150" height="62" rx="6" fill="#e9f2ff" stroke="#1e6fd9"/>
@@ -51,8 +52,8 @@
 
   <!-- Chave -->
   <rect x="110" y="344" width="150" height="46" rx="6" fill="#e9f2ff" stroke="#1e6fd9"/>
-  <text x="185" y="362" text-anchor="middle" font-weight="bold">Chave “Wi-Fi”</text>
-  <text x="118" y="380" font-size="11">meio → GPIO 7 · 3V3 on / GND off</text>
+  <text x="185" y="362" text-anchor="middle" font-weight="bold">“Wi-Fi” simulado</text>
+  <text x="118" y="380" font-size="11">solto = online · jumper GND = off</text>
 
   <!-- LED -->
   <rect x="110" y="396" width="150" height="40" rx="6" fill="#fff0f0" stroke="#d62828"/>
