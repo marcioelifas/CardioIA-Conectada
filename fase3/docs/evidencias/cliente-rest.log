@@ -1,0 +1,11 @@
+[MQTT] conectado (Success), assinando cardioia/g7f3a/+/vitals
+[API] paciente02 {"t":2,"temp":36.8,"hum":55,"bpm":78,"motion":1,"alert":0,"pending":0} -> normal
+[API] paciente02 {"t":4,"temp":36.9,"hum":55,"bpm":82,"motion":1,"alert":0,"pending":0} -> normal
+[API] paciente02 {"t":6,"temp":38.6,"hum":55,"bpm":135,"motion":1,"alert":1,"pending":0} -> ['Taquicardia (135 bpm)', 'Febre (38.6 °C)']
+[EMAIL] [CardioIA] ALERTA paciente02: Taquicardia (135 bpm), Febre (38.6 °C)
+[API] paciente02 {"t":8,"temp":38.7,"hum":55,"bpm":138,"motion":1,"alert":1,"pending":0} -> ['Taquicardia (138 bpm)', 'Febre (38.7 °C)']
+[API] paciente02 {"t":10,"temp":37.0,"hum":55,"bpm":80,"motion":1,"alert":0,"pending":0} -> normal
+[API] paciente02 {"t":12,"temp":36.8,"hum":55,"bpm":42,"motion":1,"alert":1,"pending":0} -> ['Bradicardia (42 bpm)']
+[EMAIL] [CardioIA] ALERTA paciente02: Bradicardia (42 bpm)
+[API] paciente02 {"t":80,"temp":36.8,"hum":55,"bpm":70,"motion":0,"alert":1,"pending":0} -> ['Ausência de movimento (68 s)']
+[EMAIL] [CardioIA] ALERTA paciente02: Ausência de movimento (68 s)

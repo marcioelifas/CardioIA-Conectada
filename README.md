@@ -16,7 +16,8 @@ O **CardioIA Conectada** integra dispositivos, telemetria clínica e modelos int
 | [`fase3/node-red/flow.json`](fase3/node-red/flow.json) | Dashboard (requer `node-red-dashboard`) |
 | [`fase3/docker-compose.yml`](fase3/docker-compose.yml) | Lab local: broker Mosquitto + Node-RED + simulador de sinais |
 | [`fase3/painel/`](fase3/painel/) | Painel web extra (React + Gauge do 21st.dev), lê o MQTT via WebSocket |
-| [`fase3/docs/`](fase3/docs/) | Relatórios da Parte 1 (Edge) e da Parte 2 (MQTT + dashboard) |
+| [`fase3/ir-alem-1/`](fase3/ir-alem-1/) | **Ir Além 1:** API REST (FastAPI) com a lógica de risco + cliente REST que dispara e-mail de alerta |
+| [`fase3/docs/`](fase3/docs/) | Relatórios da Parte 1 (Edge), da Parte 2 (MQTT + dashboard) e do [Ir Além 1](fase3/docs/relatorio-ir-alem-1-rest-email.md) |
 
 **Link do projeto Wokwi:** https://wokwi.com/projects/479325303590176769
 
@@ -33,6 +34,7 @@ docker compose --profile sim up -d --build
 
 - Dashboard Node-RED (entrega): http://localhost:1880/ui · Editor: http://localhost:1880. Ele tem alerta automático: o LED de status fica vermelho e aparece uma notificação na tela sempre que surge um alerta novo.
 - Painel web (extra): http://localhost:8080
+- **Ir Além 1:** API REST em http://localhost:8000/docs; e-mails de alerta na caixa de teste (Mailpit) em http://localhost:8025. Nenhum e-mail sai para a internet.
 - O simulador publica sinais falsos a cada 2 s; pare-o com `docker compose stop simulador` quando o ESP32 real estiver ligado.
 - ESP32 na bancada: aponte `MQTT_HOST` do firmware para o IP deste PC na rede local (porta 1883 liberada no firewall do Windows).
 - **Wokwi → lab:** o ESP32 do Wokwi publica no HiveMQ público e o Mosquitto local tem uma ponte (`docker/mosquitto.conf`) que traz só `cardioia/g7f3a/#` (o prefixo do grupo) para o lab. Node-RED e painel funcionam sem mudar nada.

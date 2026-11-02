@@ -2,6 +2,7 @@
 #   docker compose up -d                    -> broker MQTT + Node-RED
 #   docker compose --profile sim up -d      -> + simulador de sinais vitais (sem ESP32)
 # Dashboard Node-RED: http://localhost:1880/ui | Editor: http://localhost:1880 | Painel web: http://localhost:8080
+# Ir Além 1: API http://localhost:8000/docs | Caixa de e-mail de teste: http://localhost:8025
 
 services:
   mosquitto:
@@ -37,6 +38,38 @@ services:
       - "8080:80"
     depends_on:
       - mosquitto
+    restart: unless-stopped
+
+  # Ir Além 1: API REST (FastAPI) com a lógica de risco. Docs interativas: http://localhost:8000/docs
+  api:
+    build: ./ir-alem-1
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    environment:
+      TZ: America/Sao_Paulo   # horário de Brasília no campo recebido_em
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  # Ir Além 1: cliente REST. MQTT -> POST na API -> e-mail quando surge um alerta novo
+  cliente-rest:
+    build: ./ir-alem-1
+    command: python -u cliente.py
+    environment:
+      API_URL: http://api:8000
+      MQTT_HOST: mosquitto
+      SMTP_HOST: mailpit
+    depends_on:
+      - mosquitto
+      - api
+      - mailpit
+    restart: unless-stopped
+
+  # Servidor de e-mail de teste: recebe tudo e mostra numa caixa de entrada web (http://localhost:8025).
+  # Nenhum e-mail sai para a internet.
+  mailpit:
+    image: axllent/mailpit:v1.21.8
+    ports:
+      - "8025:8025"
     restart: unless-stopped
 
   # Publica sinais vitais falsos a cada 2 s, no mesmo formato do ESP32.
