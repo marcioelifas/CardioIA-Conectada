@@ -104,9 +104,29 @@ Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 - <b>Observações Gerais</b>: o projeto não está relacionado a nenhuma competição.
 
-| Circuito (Wokwi) | Dashboard Node-RED em alerta |
+### 🖼 Evidências
+
+**Partes 1 e 2: simulação, dashboard e bancada**
+
+| Circuito no Wokwi | Dashboard Node-RED em alerta |
 |---|---|
 | ![Circuito](fase3/docs/evidencias/01-circuito-wokwi.png) | ![Dashboard em alerta](fase3/docs/evidencias/07-dashboard-alerta.png) |
+| **Notificação automática de alerta** | **Dashboard com o ESP32-S3 real (bancada)** |
+| ![Notificação](fase3/docs/evidencias/09-dashboard-notificacao.png) | ![Bancada](fase3/docs/evidencias/10-dashboard-bancada.png) |
+| **Painel web extra (React) em alerta** | **Debug do Node-RED: rajada do buffer offline** |
+| ![Painel](fase3/docs/evidencias/08-painel-alerta.png) | ![Debug](fase3/docs/evidencias/03-debug-nodered.png) |
+
+**[Ir Além 1](fase3/ir-alem-1/README.md): API REST e e-mail de alerta** ([relatório](fase3/docs/relatorio-ir-alem-1-rest-email.md))
+
+| E-mail de alerta disparado automaticamente | API REST (Swagger) |
+|---|---|
+| ![E-mail](fase3/docs/evidencias/13-mailpit-email.png) | ![Swagger](fase3/docs/evidencias/14-api-swagger.png) |
+
+**[Ir Além 2](fase3/ir-alem-2/README.md): regressão logística × rede neuromórfica LIF** ([notebook](fase3/ir-alem-2/cardioia_lif_vs_logistica.ipynb) · [relatório](fase3/docs/relatorio-ir-alem-2-ia.md))
+
+| Neurônio LIF: membrana e spikes | Robustez a artefatos de sensor |
+|---|---|
+| ![LIF](fase3/docs/evidencias/ir-alem-2/02-lif-membrana.png) | ![Robustez](fase3/docs/evidencias/ir-alem-2/04-robustez.png) |
 
 
 ## 🔧 Como executar o código
@@ -139,15 +159,37 @@ cd CardioIA-Conectada/fase3
 docker compose up -d --build                 # acrescente --profile sim para gerar dados falsos sem ESP32
 ```
 
-| Serviço | Endereço |
-|---|---|
-| Dashboard Node-RED (entrega) | http://localhost:1880/ui · editor em http://localhost:1880 |
-| Painel web (extra) | http://localhost:8080 |
-| API REST – Ir Além 1 | http://localhost:8000/docs |
-| Caixa de e-mail de teste – Ir Além 1 | http://localhost:8025 |
-| Broker MQTT | `localhost:1883` (WebSocket na porta 9001) |
+**Arquitetura: o caminho de cada leitura**
 
-O ESP32 do Wokwi publica no HiveMQ, e a ponte do Mosquitto traz os dados para o lab automaticamente: com a simulação rodando, o dashboard já recebe.
+```
+ ESP32 (Wokwi) ──MQTT──▶ HiveMQ (broker público, internet) ──ponte──┐
+                                                                    ▼
+ ESP32-S3 (bancada) ──────────────MQTT─────────────────────▶ Mosquitto (broker local)
+                                                                    │
+                       ┌────────────────────────┬───────────────────┼──────────────────────┐
+                       ▼                        ▼                   ▼                      ▼
+                   Node-RED                  Painel             cliente-rest ──REST──▶   API
+              (dashboard + alerta)        (React, extra)             │               (risco, histórico)
+                                                                     └──SMTP──▶ Mailpit (e-mail de alerta)
+```
+
+**Por que dois brokers?**
+- O Wokwi roda nos servidores dele, na internet, e não enxerga o seu PC. Por isso publica no **HiveMQ público**.
+- O **Mosquitto** local tem uma **ponte**: copia do HiveMQ só o tópico do grupo (`cardioia/g7f3a/#`) para o lab. Assim, a simulação na nuvem e a placa real alimentam o mesmo dashboard, sem mudar nada no Node-RED.
+
+**O que roda em cada container:**
+
+| Container | O que faz | Endereço |
+|---|---|---|
+| `mosquitto` | Broker MQTT local, o "correio" do sistema. Recebe da placa e, pela ponte, do Wokwi, e entrega a todos os consumidores | `localhost:1883` (WebSocket na porta 9001) |
+| `node-red` | **Dashboard da entrega:** gráfico de BPM, medidor de temperatura, LED de status e notificação automática. Revalida as regras clínicas | http://localhost:1880/ui · editor em http://localhost:1880 |
+| `painel` | Painel web extra (React). Mostra os mesmos dados com visual de monitor hospitalar, lendo direto do MQTT | http://localhost:8080 |
+| `api` | **Ir Além 1:** API REST em FastAPI. Recebe cada amostra, avalia o risco e guarda o histórico | http://localhost:8000/docs |
+| `cliente-rest` | **Ir Além 1:** automação. Leva cada amostra do MQTT para a API e envia e-mail quando surge um alerta novo | `docker compose logs -f cliente-rest` |
+| `mailpit` | **Ir Além 1:** caixa de e-mail de teste. Recebe os alertas e mostra numa página; nada sai para a internet | http://localhost:8025 |
+| `simulador` | Opcional (`--profile sim`). Gera sinais vitais falsos quando não há placa nem Wokwi | – |
+
+Com a simulação do Wokwi rodando, o dashboard já recebe os dados, porque a ponte traz tudo automaticamente.
 
 ### 3. Teste automatizado (Wokwi CLI)
 

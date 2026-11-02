@@ -60,6 +60,31 @@ O estudo aplica IA à **série temporal de frequência cardíaca** para detectar
 - <b>Relatório comparativo</b>: [`../docs/relatorio-ir-alem-2-ia.md`](../docs/relatorio-ir-alem-2-ia.md)
 - <b>Limitação</b>: a base é sintética. O próximo passo é validar com séries reais do PhysioNet (MIT-BIH) e com as leituras do ESP32 da bancada.
 
+**Como funciona o neurônio LIF.** O neurônio funciona como um balde furado:
+- **Enche** quando o BPM sai da faixa normal.
+- **Vaza** com o tempo, pela constante τ.
+- **Dispara um spike** quando transborda, e o balde esvazia.
+
+No exemplo abaixo, a crise gera vários spikes seguidos. Já cada artefato isolado gera um só, e por isso a decisão exige pelo menos *k* spikes.
+
+![Membrana do LIF](../docs/evidencias/ir-alem-2/02-lif-membrana.png)
+
+**Exemplos da base sintética:**
+
+![Exemplos](../docs/evidencias/ir-alem-2/01-exemplos.png)
+
+**Matrizes de confusão:** a LR com atributos genéricos não detecta bradicardia.
+
+![Confusão](../docs/evidencias/ir-alem-2/03-confusao.png)
+
+**Robustez a artefatos:** a linha tracejada mostra o modelo re-treinado com aumento de dados.
+
+![Robustez](../docs/evidencias/ir-alem-2/04-robustez.png)
+
+**Latência de detecção online:**
+
+![Latência](../docs/evidencias/ir-alem-2/05-latencia.png)
+
 
 ## 🔧 Como executar o código
 

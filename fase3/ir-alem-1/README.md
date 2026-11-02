@@ -65,6 +65,18 @@ Relatório completo, com evidências: [`../docs/relatorio-ir-alem-1-rest-email.m
 - <b>Caixa de e-mail de teste</b>: http://localhost:8025.
 - <b>Decisão técnica</b>: a automação ficou em Python, e não no Node-RED. O Node-RED alerta quem está olhando o dashboard, e o cliente Python alerta quem não está (plantão). Os dois são independentes.
 
+**Caixa de entrada:** 3 alertas distintos geraram 3 e-mails, sem repetição.
+
+![Caixa de entrada](../docs/evidencias/12-mailpit-caixa.png)
+
+**E-mail de alerta:** traz o motivo e as últimas leituras, buscadas na API com GET.
+
+![E-mail](../docs/evidencias/13-mailpit-email.png)
+
+**API REST (Swagger):**
+
+![Swagger](../docs/evidencias/14-api-swagger.png)
+
 
 ## 🔧 Como executar o código
 
