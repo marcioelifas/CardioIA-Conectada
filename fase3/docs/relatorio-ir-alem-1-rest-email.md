@@ -21,6 +21,12 @@
 
 Assim, o cliente consome a API nos dois sentidos: envia dados (POST) e recebe dados (a resposta do POST e o GET do histórico), como pede o enunciado.
 
+**Por que a automação está em Python e não no Node-RED?** O Node-RED também conseguiria chamar a API e mandar e-mail (nós `http request` e `e-mail`). A separação, porém, foi intencional:
+
+- **Papéis diferentes.** O Node-RED (Parte 2) é a camada de visualização: alerta **quem está olhando a tela** (LED e notificação no dashboard). O cliente Python é a automação no estilo RPA: alerta **quem não está olhando** (e-mail para o plantão) e alimenta o histórico da API. É a mesma divisão de um hospital, onde o monitor do leito apita e um sistema separado aciona o plantonista.
+- **Independência.** Como os dois assinam o mesmo tópico MQTT de forma independente, se o dashboard cair o e-mail continua saindo, e vice-versa. Nenhum depende do outro.
+- **Código testável e versionado.** A regra de risco fica em uma função Python (`risco.py`) com autoteste, mais fácil de revisar e testar do que uma lógica espalhada em nós visuais. O enunciado do Ir Além 1 também pede explicitamente um cliente REST em Python.
+
 ## 2. API REST
 
 | Método | Rota | Função |
