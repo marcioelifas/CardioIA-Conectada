@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" font-family="Segoe UI, Arial, sans-serif" font-size="13">
+  <rect width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1a1a1a">CardioIA – Esquema de ligações da bancada (ESP32-S3 DevKitC-1)</text>
+  <text x="500" y="52" text-anchor="middle" fill="#555">vermelho = 3V3 · laranja = 5V · preto = GND · azul = sinal · verde = SPI do display</text>
+
+  <!-- ESP32-S3 -->
+  <rect x="400" y="110" width="200" height="420" rx="10" fill="#2d2d2d"/>
+  <text x="500" y="140" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">ESP32-S3</text>
+  <text x="500" y="158" text-anchor="middle" fill="#bbb" font-size="11">DevKitC-1 N16R8</text>
+  <g fill="#fff" font-size="12">
+    <text x="410" y="200">GPIO 4</text><text x="410" y="250">GPIO 15</text><text x="410" y="300">GPIO 6</text>
+    <text x="410" y="350">GPIO 7</text><text x="410" y="400">GPIO 5</text>
+    <text x="410" y="460">3V3</text><text x="410" y="490">5V</text><text x="410" y="520">GND</text>
+    <text x="590" y="200" text-anchor="end">GPIO 10</text><text x="590" y="230" text-anchor="end">GPIO 9</text>
+    <text x="590" y="260" text-anchor="end">GPIO 46</text><text x="590" y="290" text-anchor="end">GPIO 11</text>
+    <text x="590" y="320" text-anchor="end">GPIO 12</text><text x="590" y="350" text-anchor="end">GPIO 13</text>
+    <text x="590" y="380" text-anchor="end">GPIO 14</text>
+    <text x="590" y="460" text-anchor="end">3V3</text><text x="590" y="520" text-anchor="end">GND</text>
+  </g>
+  <rect x="470" y="530" width="60" height="18" rx="3" fill="#888"/>
+  <text x="500" y="566" text-anchor="middle" fill="#555" font-size="11">USB-C “UART” → PC da bancada</text>
+
+  <!-- Sinais à esquerda -->
+  <g stroke="#1e6fd9" stroke-width="2.5" fill="none">
+    <path d="M400 196 H260"/><path d="M400 246 H260"/><path d="M400 296 H260"/>
+    <path d="M400 346 H260"/><path d="M400 396 H330"/>
+  </g>
+  <!-- Alimentação à esquerda -->
+  <path d="M400 456 H70 V215" stroke="#d62828" stroke-width="2.5" fill="none"/>
+  <path d="M70 365 H110" stroke="#d62828" stroke-width="2.5"/>
+  <path d="M70 215 H110" stroke="#d62828" stroke-width="2.5"/>
+  <path d="M400 486 H90 V262 H110" stroke="#f08c00" stroke-width="2.5" fill="none"/>
+  <path d="M400 516 H50 V180 H110" stroke="#111" stroke-width="2.5" fill="none"/>
+  <path d="M50 280 H110 M50 312 H110 M50 335 H110 M50 412 H110" stroke="#111" stroke-width="2.5" fill="none"/>
+
+  <!-- DHT22 -->
+  <rect x="110" y="165" width="150" height="62" rx="6" fill="#e9f2ff" stroke="#1e6fd9"/>
+  <text x="185" y="185" text-anchor="middle" font-weight="bold">DHT22 (AM2302)</text>
+  <text x="118" y="203" font-size="11">− GND · + 3V3 · OUT → GPIO 4</text>
+  <text x="118" y="219" font-size="10" fill="#555">sensor sem placa: 10 kΩ OUT↔3V3</text>
+
+  <!-- PIR -->
+  <rect x="110" y="236" width="150" height="50" rx="6" fill="#e9f2ff" stroke="#1e6fd9"/>
+  <text x="185" y="256" text-anchor="middle" font-weight="bold">PIR HC-SR501</text>
+  <text x="118" y="274" font-size="11">VCC 5V · OUT → GPIO 15 · GND</text>
+
+  <!-- Botão -->
+  <rect x="110" y="292" width="150" height="46" rx="6" fill="#e9f2ff" stroke="#1e6fd9"/>
+  <text x="185" y="311" text-anchor="middle" font-weight="bold">Botão de pulso</text>
+  <text x="118" y="328" font-size="11">GPIO 6 ↔ GND (pull-up interno)</text>
+
+  <!-- Chave -->
+  <rect x="110" y="344" width="150" height="46" rx="6" fill="#e9f2ff" stroke="#1e6fd9"/>
+  <text x="185" y="362" text-anchor="middle" font-weight="bold">Chave “Wi-Fi”</text>
+  <text x="118" y="380" font-size="11">meio → GPIO 7 · 3V3 on / GND off</text>
+
+  <!-- LED -->
+  <rect x="110" y="396" width="150" height="40" rx="6" fill="#fff0f0" stroke="#d62828"/>
+  <text x="185" y="413" text-anchor="middle" font-weight="bold">LED de alerta</text>
+  <text x="118" y="429" font-size="11">GPIO 5 → 220 Ω → LED → GND</text>
+  <rect x="290" y="388" width="40" height="16" fill="#f1d7a6" stroke="#8a5a00"/>
+  <text x="310" y="384" text-anchor="middle" font-size="10">220 Ω</text>
+  <path d="M290 396 H260" stroke="#1e6fd9" stroke-width="2.5"/>
+
+  <!-- Display -->
+  <rect x="720" y="170" width="240" height="250" rx="8" fill="#eaf7ee" stroke="#2b8a3e"/>
+  <text x="840" y="192" text-anchor="middle" font-weight="bold">Display ILI9341 2.4" (SPI)</text>
+  <g font-size="12">
+    <text x="735" y="204">CS</text><text x="735" y="234">DC</text><text x="735" y="264">RESET</text>
+    <text x="735" y="294">SDI (MOSI)</text><text x="735" y="324">SCK</text><text x="735" y="354">SDO (MISO)</text>
+    <text x="735" y="384">T_CS (touch)</text><text x="855" y="384" font-size="10" fill="#555">fica em HIGH</text>
+    <text x="735" y="408">VCC + LED → 3V3 · GND → GND</text>
+  </g>
+  <g stroke="#2b8a3e" stroke-width="2.5">
+    <path d="M600 196 H720"/><path d="M600 226 H720"/><path d="M600 256 H720"/>
+    <path d="M600 286 H720"/><path d="M600 316 H720"/><path d="M600 346 H720"/><path d="M600 376 H720"/>
+  </g>
+  <path d="M600 456 H690 V404 H720" stroke="#d62828" stroke-width="2.5" fill="none"/>
+  <path d="M600 516 H705 V414 H720" stroke="#111" stroke-width="2.5" fill="none"/>
+
+  <text x="500" y="610" text-anchor="middle" fill="#555" font-size="12">No Wokwi (ESP32 clássico) os pinos são outros; veja a tabela no README. O mesmo sketch escolhe os pinos sozinho.</text>
+</svg>

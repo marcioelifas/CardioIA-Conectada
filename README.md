@@ -53,6 +53,8 @@ O token é gerado em https://wokwi.com/dashboard/ci.
 
 O mesmo `sketch.ino` roda na placa real. Os pinos mudam sozinhos conforme a placa (`#if CONFIG_IDF_TARGET_ESP32S3`).
 
+![Esquema de ligações da bancada](fase3/docs/esquema-bancada.svg)
+
 | Componente | Pino do componente | ESP32-S3 (bancada) | ESP32 (Wokwi) |
 |---|---|---|---|
 | **Display ILI9341 2.4"** | VCC / LED | 3V3 | 3V3 |
